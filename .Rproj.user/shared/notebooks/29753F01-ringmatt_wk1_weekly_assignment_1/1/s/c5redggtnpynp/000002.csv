@@ -1,0 +1,5 @@
+"0","ggplot("
+"0","  data = mpg,"
+"0","  aes(x = class,"
+"0","      y = hwy)) +"
+"0","  geom_boxplot()"
