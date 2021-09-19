@@ -1,0 +1,265 @@
+---
+title: "Homework: sp and sf"
+author: "Your name here"
+date: "today's date here"
+output: html_document
+---
+
+<!-- Please knit this right away! The additional information for (html and css)
+are provided to help you build on your current R Markdown toolbox. You will not
+be responsible for learning these additional tools at this point. -->
+
+<!-- The head tag, <head>, is a container for metadata in an html document. 
+We can use it to define styles and do lots of other cool things things. -->
+<head>
+<!-- The link tag, <link>, creates a relationship between this file and
+an external source. Here, I'm linking font-awesome so I can include a 
+couple of icons that I like (user-secret and user-circle) -->
+<link 
+  rel="stylesheet" 
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- Here I'm linking to a javascript file that will give us access to font awesome -->
+  <script src="https://kit.fontawesome.com/03064bdd6c.js" crossorigin="anonymous"></script>
+</head>
+<!-- Note in the above that some html tags, like <head> need to be closed 
+with </head>. Others, like <link> don't need a closing tag. -->
+
+```{css, echo = FALSE}
+/* We can use the body tag to change the default text size of the whole document. */
+  
+body {
+  font-size: 18px
+}
+
+/* We can increase the space between our list items */
+  
+ul, li {
+  padding-top: 0.5em;
+}
+
+/* I can add custom classes with a period symbol. */
+
+.score {
+  font-weight: bold;
+  color: red;
+  background-color: #ffff80;
+}
+
+/* I create an custom class for user secrets. Have a look at the area surrounding my spy icons below to see what this does. Also, do you notice any similarity to your ggPlot theme elements? */
+  
+.mysecret {
+  border: 1px solid #999999;
+  border-style: solid; 
+  padding: 20px; 
+  border-radius: 25px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* Here, I add a custom class for area surrounding the graded portions of this assignment.*/
+
+.now_you {
+  border-left: 8px solid #292093;
+  background-color: #e6ffff;
+  padding: 16px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* Here I will add some custom css on my font awesome icons*/
+  
+.fas {
+  font-size:36px
+}*/
+
+/* I can modify a current class like the below. To see what this does,
+have a look at where I am using block quotes in the document.*/
+  
+blockquote {
+  font-size: 18px;
+  border-left: 8px solid #292093;
+  background-color: #e6ffff;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+```
+
+<!-- Here is the setup for knitr. -->
+
+```{r knitr_setup, include = FALSE}
+options(knitr.table.format = "html")
+
+# Note: I have to load this twice, because my example uses tidyverse:
+library(tidyverse)
+```
+
+<hr>
+
+## Overview
+
+In this exercise, you will explore US census tract data in Washington D.C and the surrounding states.
+
+You will be working in two files as you complete this homework, your own script file, and this R markdown file, which you will be editing and adding to. You will submit this R Markdown file (modified as described below) and your R script file.
+
+<!-- A div is a container for html. I assign it to the class "my secret that
+we created above -->
+<div class = "mysecret">
+<!-- The i tag is commonly used to create italic text, but it can also be 
+used to create icons -->
+<i class="fas fa-user-secret"></i> When I create an R Markdown file to communicate a coding process, I usually work in a .R script file and copy-and-paste the code into the R Markdown document at the end.
+</div>
+
+<hr>
+
+<span style = "color: red; font-size: 36px"><i class="fas fa-exclamation-triangle"></i> **Important**</span> 
+
+* To receive full credit for a given question, please ensure that the result you provide **only** answers the given question. For example, in the table below, if you were asked to determine the value in column `b` where column `a` is equal to "hello" you would provide the following code:
+
+```{r example}
+tibble(
+  a = c('hello', 'world'),
+  b = 1:2) %>% 
+  filter(a == 'hello') %>% 
+  pull(b)
+```
+
+<hr>
+
+## Getting started
+
+If you haven't already, please start by knitting this file.
+
+Next, create a new folder in your R Studio project folder: `data/raw/spatial/census`.
+
+After you have created your folder, download all of the files in our Canvas data folder that start with the word "census" (there will be four files) and save those files to your newly created folder.
+
+Open R Studio. Please ensure that the Global Options for R Markdown are set to "Show output preview in Viewer Pane". This will allow you to view the knitted document (i.e., the html version of this file) right next to your code.
+
+**Please note: For R Markdown to work properly this file must be placed in the top level of your project folder!**
+
+Please ensure that you are starting with a clean session. Do the following before continuing:
+
+1. If there are any script files open in your source pane. Close them. If any of the file titles are blue, save them prior to closing.
+
+1. In the *Environment* tab of your **workspace pane**, ensure that your **global environment** is empty. If it is not, click the *broom* to remove all objects.
+
+1. In the *History* tab of your **workspace pane**, ensure that your history is empty. If it is not, click the *broom* to remove your history.
+
+Create a script file:
+
+1. Open a new script file.
+
+1. Save the file right away. Please save it as the following, but **replace my name with yours**: `scripts/homework_2_Brian_Evans.R`.
+
+1. Add a new code section and call it "setup"
+
+1. After a space between your section break, include and run the following:
+
+```{r setup, eval = TRUE, results = 'hide', message = FALSE}
+library(tidyverse)
+library(sf)
+```
+
+<hr>
+
+## Read in the data
+
+<div class = "now_you">
+
+<i class="fas fa-user-circle"></i> 
+
+1. <span class = "score">[0.5 points]</span>  Read the `census.shp` file (and its friends along the way!) into your global environment, assigning the name `census_sp`. In your script file, be sure to include a comment that describes the file that you are reading in. Copy-and-paste your code into the code chunk below.
+
+```{r read_data, results = 'hide'}
+
+# Paste your code in here!
+
+```
+
+2. <span class = "score">[0.5 points]</span>  Let's start by exploring our the coordinate reference system (CRS). What is the proj4string for these data?
+    
+```{r proj4string}
+
+# Paste your code in here!
+
+```
+
+
+3. <span class = "score">[0.5 points]</span> Is this a projected or geographic coordinate system?
+    
+4. <span class = "score">[1.0 points]</span> The datum for this CRS is the "North American Datum 1983". Would you expect the spatial accuracy (i.e., how close a location is to its true location) of points in North America using this datum to be higher, lower, or the same as the spatial accuracy of WGS84? Why?
+    
+5. <span class = "score">[0.5 points]</span> Subset the data  such that you create a separate SpatialPointsDataFrame for  each individual state (District of Columbia as a state here!). Assign the objects to your global environment using the names `dc_sp`, `md_sp`, and `va_sp` (*Note: Note: If you are comfortable with for loops or purrr and using lists, this would be a good use for it! If not, you don't have to use them here.*):
+
+```{r subset}
+# Paste your code in here!
+```
+
+6. <span class = "score">[0.5 points]</span> What is the spatial extent of each state?
+
+```{r extent}
+# Paste your code in here!
+```
+
+7. <span class = "score">[0.5 points]</span> Plot dc_sp:
+
+```{r plot_dc_sp}
+# Paste your code in here!
+```
+
+8. <span class = "score">[0.5 points]</span> Create a shapefile of the state of Virginia by dissolving the census tract boundaries for that state:
+
+```{r dissolve_va}
+# Paste your code in here!
+```
+
+9. <span class = "score">[0.5 points]</span> Plot the state of Virginia:
+
+```{r plot_va}
+# Paste your code in here!
+```
+
+10. <span class = "score">[1.0 points]</span> Using a handheld gps unit set to record points in **WGS84**, our classroom is located at a latitude of 38.90677 and a longitude of -77.075212. Using this information, create a SpatialPoints object (with just one point; see `?SpatialPoints`). Assign the name `classroom_sp` to the resultant object.
+
+*Please note: The proj4string for WGS84 can be specified as "+proj=longlat +datum=WGS84".*
+
+```{r class_point}
+# Paste your code in here!
+```
+
+11. <span class = "score">[0.5 points]</span> Convert the DC shapefile, `dc_sp`, to a simple features object and assign the object to your global environment with the name `dc_sf`:
+
+```{r dc_sf}
+# Paste your code in here!
+```
+
+12. <span class = "score">[0.5 points]</span> Convert your `classroom_sp` file to a simple features object and assign the object to your global environment with the name `classroom_sf`:
+
+```{r classroom_sf}
+# Paste your code in here!
+```
+
+13. <span class = "score">[1.0 points]</span> Use a spatial join (`classroom_sf` and `dc_sf`) to determine the number of people that live in Georgetown's census tract (*Hint: You should modify your point data **before** joining the data!*):
+
+```{r spatial_join}
+# Paste your code in here!
+```
+
+14. <span class = "score">[1.0 points]</span> Using ggPlot, plot the `dc_sf` census tract data such that the fill color of each census tract corresponds to the level of education attainment in that within the census  tract (*Note: the column "edu" refers to the proportion of the population with at least an Associate degree*). Additionally:
+    a. <span class = "score">[0.5 points]</span> Add the location of our classroom as a point on the map.
+    b. <span class = "score">[0.5 points]</span> Please modify a minimum of three out of the seven grammar of graphics data visualization elements.
+
+```{r ggplot}
+
+```
+
+<hr>
+
+## Submission
+
+Save this document and your R script file in your project folder and submit both files to Canvas
+
+<hr>
+

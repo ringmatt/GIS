@@ -1,2 +1,7 @@
 # Packrat Files
 /packrat
+packrat/lib*/
+.Rproj.user
+
+# Data files
+/data
