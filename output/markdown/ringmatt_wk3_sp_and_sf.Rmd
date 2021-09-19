@@ -1,7 +1,7 @@
 ---
 title: "Homework: sp and sf"
-author: "Your name here"
-date: "today's date here"
+author: "Matt RIng"
+date: "9/19/2021"
 output: html_document
 ---
 
@@ -174,7 +174,9 @@ library(sf)
 
 ```{r read_data, results = 'hide'}
 
-# Paste your code in here!
+# Reads in the census shapefile
+census_sp <-
+  rgdal::readOGR('data/raw/spatial/census/census.shp')
 
 ```
 
@@ -182,43 +184,69 @@ library(sf)
     
 ```{r proj4string}
 
-# Paste your code in here!
+# Outputs the coordinate reference system for these data
+census_sp@proj4string
 
 ```
 
 
 3. <span class = "score">[0.5 points]</span> Is this a projected or geographic coordinate system?
+
+**Answer:** This is a coordinate system, as `+proj` is equal to latitude and longitude. *WIP*
     
 4. <span class = "score">[1.0 points]</span> The datum for this CRS is the "North American Datum 1983". Would you expect the spatial accuracy (i.e., how close a location is to its true location) of points in North America using this datum to be higher, lower, or the same as the spatial accuracy of WGS84? Why?
+
+**Answer:** I would expect NAD83 to have a higher accuracy for points in North America than WGS84. This is because NAD83 is constructed for use specifically in North America whereas WGS83 is designed to be used for the entire world. 
     
 5. <span class = "score">[0.5 points]</span> Subset the data  such that you create a separate SpatialPointsDataFrame for  each individual state (District of Columbia as a state here!). Assign the objects to your global environment using the names `dc_sp`, `md_sp`, and `va_sp` (*Note: Note: If you are comfortable with for loops or purrr and using lists, this would be a good use for it! If not, you don't have to use them here.*):
 
 ```{r subset}
-# Paste your code in here!
+# Separates the data by state 
+dc_sp <- census_sp[census_sp$state_name == "DC",]
+
+md_sp <- census_sp[census_sp$state_name == "Maryland",]
+
+va_sp <- census_sp[census_sp$state_name == "Virginia",]
 ```
 
 6. <span class = "score">[0.5 points]</span> What is the spatial extent of each state?
 
 ```{r extent}
-# Paste your code in here!
+# Determines the spatial extent of each state
+
+# DC's area (Land & Water)
+sum(dc_sp$ALAND) + sum(dc_sp$AWATER)
+
+# Maryland's area (Land & Water)
+sum(md_sp$ALAND) + sum(md_sp$AWATER)
+
+# Virginia's area (Land & Water)
+sum(va_sp$ALAND) + sum(va_sp$AWATER)
 ```
 
 7. <span class = "score">[0.5 points]</span> Plot dc_sp:
 
 ```{r plot_dc_sp}
-# Paste your code in here!
+# Plots DC
+
+sp::plot(dc_sp)
 ```
 
 8. <span class = "score">[0.5 points]</span> Create a shapefile of the state of Virginia by dissolving the census tract boundaries for that state:
 
 ```{r dissolve_va}
-# Paste your code in here!
+# Dissolves census tract boundaries in Virginia
+
+# Note: Creates a weird boundary whereby VA's claim to Delmarva is connected to 
+# mainland VA. Not sure how to get rid of this, even tried using sf. 
+va_dsslvd <- rgeos::gUnaryUnion(va_sp)
 ```
 
 9. <span class = "score">[0.5 points]</span> Plot the state of Virginia:
 
 ```{r plot_va}
-# Paste your code in here!
+# Plots VA using sp
+sp::plot(va_dsslvd)
 ```
 
 10. <span class = "score">[1.0 points]</span> Using a handheld gps unit set to record points in **WGS84**, our classroom is located at a latitude of 38.90677 and a longitude of -77.075212. Using this information, create a SpatialPoints object (with just one point; see `?SpatialPoints`). Assign the name `classroom_sp` to the resultant object.
@@ -226,25 +254,39 @@ library(sf)
 *Please note: The proj4string for WGS84 can be specified as "+proj=longlat +datum=WGS84".*
 
 ```{r class_point}
-# Paste your code in here!
+# Creates a point object for our classroom
+classroom_sp <- sp::SpatialPoints(cbind(-77.075212, 38.90677), 
+                                  proj4string = sp::CRS("+proj=longlat +datum=WGS84"))
 ```
 
 11. <span class = "score">[0.5 points]</span> Convert the DC shapefile, `dc_sp`, to a simple features object and assign the object to your global environment with the name `dc_sf`:
 
 ```{r dc_sf}
-# Paste your code in here!
+# Changes "dc_sp" to "dc_sf" (a simple features object)
+dc_sf <- dc_sp %>%
+  st_as_sf()
 ```
 
 12. <span class = "score">[0.5 points]</span> Convert your `classroom_sp` file to a simple features object and assign the object to your global environment with the name `classroom_sf`:
 
 ```{r classroom_sf}
-# Paste your code in here!
+# Changes the classroom point to a simple features object
+classroom_sf <- classroom_sp %>%
+  st_as_sf()
 ```
 
 13. <span class = "score">[1.0 points]</span> Use a spatial join (`classroom_sf` and `dc_sf`) to determine the number of people that live in Georgetown's census tract (*Hint: You should modify your point data **before** joining the data!*):
 
 ```{r spatial_join}
-# Paste your code in here!
+# Changes the classroom point's crs to NAD83
+classroom_prj <- classroom_sf %>%
+  st_transform(
+    st_crs(dc_sf))
+
+# Finds the population of the census tract for our classroom
+classroom_prj %>%
+  st_join(dc_sf) %>%
+  pull(population)
 ```
 
 14. <span class = "score">[1.0 points]</span> Using ggPlot, plot the `dc_sf` census tract data such that the fill color of each census tract corresponds to the level of education attainment in that within the census  tract (*Note: the column "edu" refers to the proportion of the population with at least an Associate degree*). Additionally:
@@ -252,7 +294,24 @@ library(sf)
     b. <span class = "score">[0.5 points]</span> Please modify a minimum of three out of the seven grammar of graphics data visualization elements.
 
 ```{r ggplot}
-
+# Plots education levels in DC & adds a point for our classroom
+dc_sf %>%
+  ggplot() +
+  # Adds in the education data as fill color for each tract
+  geom_sf(aes(fill = edu)) +
+  # Adds the classroom point, changes its color, shape, size
+  stat_sf_coordinates(data = classroom_prj, color = "red", 
+                      shape = "*", size = 7) + 
+  # Changes the color scale to viridis's plasma option
+  scale_fill_viridis_b(option = "plasma") +
+  # Adds labels
+  labs(title = "Education in DC",
+       fill = "Education",
+       x = "Longitude",
+       y = "Latitude",
+       caption = "Source: Census data") +
+  # Sets the theme to minimal
+  theme_minimal()
 ```
 
 <hr>
