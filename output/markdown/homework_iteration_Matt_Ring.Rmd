@@ -1,0 +1,740 @@
+---
+title: "Homework: Iteration for reading and processing spatial data"
+author: "Matt Ring"
+date: "10/6/2021"
+output: html_document
+---
+
+<!-- Please knit this right away! The additional information for (html and css)
+are provided to help you build on your current R Markdown toolbox. You will not
+be responsible for learning these additional tools at this point. -->
+
+<!-- The head tag, <head>, is a container for metadata in an html document. 
+We can use it to define styles and do lots of other cool things things. -->
+<head>
+<!-- The link tag, <link>, creates a relationship between this file and
+an external source. Here, I'm linking font-awesome so I can include a 
+couple of icons that I like (user-secret and user-circle) -->
+<link 
+  rel="stylesheet" 
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- Here I'm linking to a javascript file that will give us access to font awesome -->
+  <script src="https://kit.fontawesome.com/03064bdd6c.js" crossorigin="anonymous"></script>
+</head>
+<!-- Note in the above that some html tags, like <head> need to be closed 
+with </head>. Others, like <link> don't need a closing tag. -->
+
+```{css, echo = FALSE}
+/* We can use the body tag to change the default text size of the whole document. */
+  
+body {
+  font-size: 18px
+}
+
+/* We can increase the space between our list items */
+  
+ul, li {
+  padding-top: 0.5em;
+}
+
+/* I can add custom classes with a period symbol. */
+
+.score {
+  font-weight: bold;
+  color: red;
+  background-color: #ffff80;
+}
+
+/* I create an custom class for user secrets. Have a look at the area surrounding my spy icons below to see what this does. Also, do you notice any similarity to your ggPlot theme elements? */
+  
+.mysecret {
+  border: 1px solid #999999;
+  border-style: solid; 
+  padding: 20px; 
+  border-radius: 25px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* Here, I add a custom class for area surrounding the graded portions of this assignment.*/
+
+.now_you {
+  border-left: 8px solid #292093;
+  background-color: #e6ffff;
+  padding: 16px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* Here I will add some custom css on my font awesome icons*/
+  
+.fas {
+  font-size:36px
+}*/
+
+/* I can modify a current class like the below. To see what this does,
+have a look at where I am using block quotes in the document.*/
+  
+blockquote {
+  font-size: 18px;
+  border-left: 8px solid #292093;
+  background-color: #e6ffff;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+```
+
+<!-- Here is the setup -->
+
+```{r knitr_setup, include = FALSE}
+options(knitr.table.format = "html")
+
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE
+)
+
+knitr::opts_knit$set(root.dir = "D:/Academics/GradSchool/GUClasses/PPOL683_GIS/Code/ppol683")
+```
+
+<hr>
+
+## Overview
+
+In this exercise, you will be reading and processing spatial and implicitly spatial data files using iteration. We will be working with derived spatial data files from the US Census (tigris) and Covid-19 data from the New York Times GitHub repository for covid data (<a href = 'https://github.com/nytimes/covid-19-data' target = "_blank">link</a>).
+
+You will be generating two files as you complete this homework -- this R markdown file, which you will be editing and adding to, and your own script file. You will submit both files.
+
+<!-- A div is a container for html. I assign it to the class "my secret that
+we created above -->
+<div class = "mysecret">
+<!-- The i tag is commonly used to create italic text, but it can also be 
+used to create icons -->
+<i class="fas fa-user-secret"></i> When I create an R Markdown file to communicate a coding process, I usually work in a .R script file and copy-and-paste the code into the R Markdown document at the end.
+</div>
+
+<hr>
+
+<span style = "color: red; font-size: 36px"><i class="fas fa-exclamation-triangle"></i> **Important**</span> 
+
+<hr>
+
+## Getting started
+
+If you haven't already, please start by knitting this file.
+
+The data for this assignment is placed in a compressed folder on Canvas called "homework_iteration.zip". Download the file to your data/raw folder.
+
+Open R Studio. Please ensure that the Global Options for R Markdown are set to "Show output preview in Viewer Pane". This will allow you to view the knitted document (i.e., the html version of this file) right next to your code.
+
+Please ensure that you are starting with a clean session. Do the following before continuing:
+
+1. If there are any script files open in your source pane, close them. If any of the file titles are blue, save them prior to closing.
+
+2. In the *Environment* tab of your **workspace pane**, ensure that your **global environment** is empty. If it is not, click the *broom* to remove all objects.
+
+3. In the *History* tab of your **workspace pane**, ensure that your history is empty. If it is not, click the *broom* to remove your history.
+
+Create a script file:
+
+1. Open a new script file.
+
+2. Save the file right away. Please save it as the following, but **replace my name with yours**: `scripts/homework_iteration_Brian_Evans.R`.
+
+3. Add a new code section (Ctrl or Cmd R) and call it "setup"
+
+4. Add a space after your section break and include and run the following:
+
+```{r setup, eval = TRUE, results = 'hide', message = FALSE}
+library(tidyverse)
+library(sf)
+```
+
+5. Add a space after the above and unzip the homework folder using by typing and running the following:
+
+```{r unzip, eval = FALSE}
+unzip(
+  zipfile =  'data/raw/homework_iteration.zip',
+  exdir = 'data/raw')
+```
+
+*Note: The `zipfile =` argument specifies the read path. The `exdir =` argument specifies the write path. In the above, a new folder is generated for our current homework. We will remove this folder at the end of our session.*
+
+<hr>
+
+## Background
+
+### Reading in files
+
+If we want to read in a single file, we provide the path to the file inside (optimally) the `read_csv()` function:
+
+```{r}
+mask_use <-
+  read_csv('data/raw/homework_iteration/mask_use.csv')
+```
+
+We can modify the statement above, by using the base R function `file.path()` to construct our file path:
+
+```{r}
+mask_use <-
+  read_csv(
+    file.path(
+      'data/raw/homework_iteration',
+      'mask_use.csv'))
+```
+
+If we have to read in multiple files, this repetition can lead to errors and unnecessarily long code. We can avoid this by assigning a read directory to our global environment (*Note: Only relative paths are required because we're working in a project*):
+
+```{r}
+read_dir <-
+  'data/raw/homework_iteration'
+
+mask_use <-
+  read_csv(
+    file.path(read_dir, 'mask_use.csv'))
+```
+
+But this still leads to redundant code if we have to read in a lot of files:
+
+```{r}
+read_dir <-
+  'data/raw/homework_iteration'
+
+mask_use <-
+  read_csv(
+    file.path(read_dir, 'mask_use.csv'))
+
+prison_facilities <-
+  read_csv(
+    file.path(read_dir, 'prison_facilities.csv'))
+```
+
+### Reading in multiple files with iteration
+
+Reading in a lot of files at once can lead to undue repetition in our scripts.
+
+Let's use the `list.files()` function to see the files in our homework directory:
+
+```{r list.files}
+list.files(read_dir)
+```
+
+That's a lot of files! We can subset to just the files of interest by specifying a pattern we want to search for, using the argument `pattern = `. Let's search for *.csv* files:
+
+```{r list.files_pattern}
+list.files(read_dir, pattern = '.csv')
+```
+
+If we want to also return the path to the files, we can add `full.names = TRUE` to our argument:
+
+```{r list.files_full_names}
+list.files(
+  read_dir,
+  pattern = '.csv',
+  full.names = TRUE)
+```
+
+*Note in the above, I separated the code block into multiple lines because there are more than two arguments supplied to `list.files()`*.
+
+We can use the above, in combination with `purrr::map()` to read in all of our files at once. Let's assign it as a list file to our global environment:
+
+```{r list.files_map}
+table_list <-
+  list.files(
+    read_dir,
+    pattern = '.csv',
+    full.names = TRUE) %>% 
+  purrr::map(~ read_csv(.))
+```
+
+If you ran and explored the above, you probably noticed we didn't assign any names to our objects -- they are only defined by index (position). 
+
+```{r}
+names(table_list)
+```
+
+We can specify the names to our object using the `set_names()` function. I like to assign my names to the global environment to avoid reduncancy in the code:
+
+```{r set_names}
+table_names <-
+  list.files(
+    read_dir,
+    pattern = '.csv',
+    full.names = TRUE)
+
+table_list <-
+  table_names %>% 
+  purrr::map(~ read_csv(.)) %>% 
+  set_names(table_names)
+
+names(table_list)
+```
+
+So, now we have names, but they're terrible ones. Things get a little better if we use the `file.path()` function inside our `map()`:
+
+```{r list.files_map_file_path}
+table_names <-
+  list.files(
+    read_dir,
+    pattern = '.csv')
+
+table_list <-
+  table_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      read_csv()) %>% 
+  set_names(table_names)
+
+names(table_list)
+```
+
+Our names are still terrible. They've got *.csv* in them -- because the files are not comma separated values (each is a tibble object), this name isn't appropriate. We can use the function `str_remove()` function from the `stringr` package in `tidyverse` to remedy this when we set the names:
+
+```{r read_str_remove}
+table_names <-
+  list.files(
+    read_dir,
+    pattern = '.csv')
+
+table_list <-
+  table_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      read_csv()) %>% 
+  set_names(
+    str_remove(table_names, '.csv'))
+
+names(table_list)
+```
+
+Of course, we may not want a list object -- we probably just want to put our objects inside of the global environment itself. To do so, we use the function `list2env()` and specify the environment as `.GlobalEnv`. This is how our full iterative data-reading code block is written:
+
+```{r read_list2env}
+read_dir <-
+  'data/raw/homework_iteration'
+
+table_names <-
+  list.files(
+    read_dir,
+    pattern = '.csv')
+
+table_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      read_csv()) %>% 
+  set_names(
+    str_remove(table_names, '.csv')) %>% 
+  list2env(.GlobalEnv)
+```
+
+<div class = "now_you">
+
+<i class="fas fa-user-circle"></i> 
+
+1. <span class = "score">[0.5 points]</span>  Use `st_read()` to read in the file `conus_counties.shp` from the folder "data/raw/homework_iteration", using the `file.path()` function to specify the location of the file:
+
+```{r q1, results = 'hide'}
+# read in the conus counties shapefile
+
+conus_counties <-
+  st_read(
+    file.path(read_dir, 'conus_counties.shp'))
+```
+
+2. <span class = "score">[0.5 points]</span>  Generate a vector of character values, where each value represents the names of the shapefiles (`*.shp`) in `read_dir`. Assign the character vector to your global environment with the name `shp_names`:
+
+```{r q2}
+# generate a vector of shapefile names
+
+shp_names <-
+  list.files(
+    read_dir,
+    pattern = '.shp')
+```
+
+3. <span class = "score">[1.0 points]</span> Using the vector `shp_names`, read in all of the shapefiles in `read_dir` at once and assign them to your global environment (without an extension in the assigned name).
+    
+```{r q3}
+# read all shapefiles to the global environment iteratively
+
+shp_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      read_csv()) %>% 
+  set_names(
+    str_remove(shp_names, '.shp')) %>% 
+  list2env(.GlobalEnv)
+```
+
+</div>
+
+### Reading and processing files
+
+The real power of reading files with iteration (especially with spatial files) comes with including data processing in the iteration.
+
+For example, I really dislike upper-case letters in my column names. Let's look at the column names of `mask_use`:
+
+```{r names_mask_use}
+names(mask_use)
+```
+
+I can set all of the names to lowercase using the function `tolower()`:
+
+```{r one_lowercase}
+mask_use %>% 
+  set_names(
+    names(.) %>% 
+      tolower())
+```
+
+We can also do this to all of our files at once, as we read them in (*Note: Only `mask_use.csv` really has uppercase names, this is just an example*):
+
+```{r all_lowercase}
+read_dir <-
+  'data/raw/homework_iteration'
+  
+table_names <-
+  list.files(
+    read_dir,
+    pattern = '.csv')
+
+table_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      read_csv() %>% 
+      set_names(
+        names(.) %>% 
+          tolower())) %>% 
+  set_names(
+    str_remove(table_names, '.csv')) %>% 
+  list2env(.GlobalEnv)
+```
+
+<hr>
+
+<div class = "now_you">
+
+<i class="fas fa-user-circle"></i> 
+
+4. <span class = "score">[0.5 points]</span> ESRI shapefiles typically have field names (i.e. column names) in all uppercase letters. This is annoying, but easily dealt with by processing a file as we read it in. In a single piped statement, read in the file `conus_counties.shp` and change the names of the fields to lowercase.
+
+```{r q4}
+# reads in conus_counties.shp and sets all columns to lowercase
+
+conus_counties <-
+  st_read(
+    file.path(read_dir, 'conus_counties.shp')) %>%
+  set_names(
+    names(.) %>%
+      tolower())
+```
+
+5. <span class = "score">[1.0 points]</span> Modify your code from question 3 such that it converts all of the field names to lowercase before assigning each object to your global environment.
+
+```{r q5}
+# reads in all shapefiles and sets all column names to lowercase
+
+shp_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      st_read() %>%
+      set_names(
+        names(.) %>%
+          tolower())) %>% 
+  set_names(
+    str_remove(shp_names, '.shp')) %>% 
+  list2env(.GlobalEnv)
+```
+
+6. <span class = "score">[1.0 points]</span> While reading in a file, we may want to convert the coordinate reference system (CRS). Read in `conus_counties.shp` and transform the CRS to EPSG 5070 (NAD83 with a Conus Albers projection):
+
+```{r q6}
+# 6. read in conus_counties.shp, sets all columns to lowercase, 
+# and converts the CRS to EPSG 5070
+
+conus_counties <-
+  st_read(
+    file.path(read_dir, 'conus_counties.shp')) %>%
+  set_names(
+    names(.) %>%
+      tolower()) %>%
+  st_transform(crs = 5070)
+```
+
+7. <span class = "score">[1.0 points]</span> Rather than transforming each file one-by-one, we can convert them all while reading in the files. Modify your code from Question 5 such that it reads in the files, makes all of the field names of each file lowercase, **and** transforms the CRS to EPSG 5070:
+
+```{r q7}
+# reads in all shapefiles, changing column names to lowercase and
+# CRS to EPSG 5070
+
+shp_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      st_read() %>%
+      set_names(
+        names(.) %>%
+          tolower()) %>%
+      st_transform(crs = 5070)) %>% 
+  set_names(
+    str_remove(shp_names, '.shp')) %>% 
+  list2env(.GlobalEnv)
+```
+
+</div>
+
+<hr>
+
+### Iteration with control flow constructs 
+
+A **control flow construct** defines when an execution occurs. With *for loops* and `purrr::map()` (behind the scenes), we used control flow constructs to define an iteration.
+
+For example, let's look at the following *for loop* statement:
+
+```{r}
+x <-
+  1:3
+
+for(i in 1:length(x)) {
+  x[i] <-
+    x[i] * 2
+}
+
+x
+```
+
+Above, when we used the control flow construct `for(i in 1:length(x))`, we specified that we want to execute a function (`x[i] + 1`) on each of the indices (i.e., positions) in vector `x`. Each function was run separately for each index of `x`. 
+
+Another control flow construct that we commonly use in R is the `if(logical test) {} else {}` statement. We can use this control flow construct to do one thing if a logical test evaluates to TRUE or something else if it evaluates to FALSE:
+
+```{r, eval = FALSE}
+if(a == b) {
+  do this
+} else {
+  do that
+}
+```
+
+
+Let's see how it works inside of a *for loop*:
+
+```{r}
+y <-
+  1:10
+
+for(i in 1:length(y)) {
+  y[i] <-
+    if(y[i] <= 5) {
+    0
+    } else {
+    1
+    }}
+y
+```
+
+We could have also done this inside of a `map()` function (*Note: Here I'm using `map_dbl()`, which returns a vector of numbers instead of a list*):
+
+```{r}
+map_dbl(
+  1:10,
+  ~ if(. <= 5) {
+    0
+  } else {
+    1
+  })
+```
+
+### Using a control flow construct with a data frame
+
+Let's see how we'd use this with a data frame. We can test whether the word state is in a given data frame as such:
+
+```{r}
+prison_systems %>% 
+  {'state' %in% names(.)}
+```
+
+```{r}
+mask_use %>% 
+  {'state' %in% names(.)}
+```
+
+*Note: The curly brackets above generate an environment that isolates the logical test. Without this, the pipe would try to pass the data to the word "state", which will generate an error.*
+
+The `prison_systems` data frame contains the column `state` whereas `mask_use` does not. We can use our `if(logical test) {} else {}`construct to subset the column if it exists, or return the full data frame if it does not.
+
+Let's subset to "California", but only if there is a `state` column:
+
+```{r}
+prison_systems %>% 
+  {if('state' %in% names(.)) {
+    filter(., state == 'California')
+  } else {
+    .
+  }}
+
+mask_use %>% 
+  {if('state' %in% names(.)) {
+    filter(., state == 'California')
+  } else {
+    .
+  }}
+```
+
+*Note that we have to provide an environment for our logical test above by wrapping the entire `if(logical test) {} else {}` statement inside curly brackets.*
+
+We can do the above with iteration by placing this inside of a `map()` function while reading in the data:
+
+```{r}
+table_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      read_csv() %>% 
+      set_names(
+        names(.) %>% 
+          tolower()) %>% 
+      {if('state' %in% names(.)) {
+        filter(., state == 'California')
+      } else {
+        .
+      }}) %>% 
+  set_names(
+    str_remove(table_names, '.csv'))
+```
+
+The above is very useful for reading in shapefiles, because it can be used to reduce the size of a file before more memory-intensive processing steps like `st_transform()`.
+
+<div class = "mysecret">
+<i class="fas fa-user-secret"></i> When working with geospatial objects **always** make sure that the size of the object is no larger than is needed! Otherwise, out-of-memory errors are lurking in your not-to-distant future.
+</div>
+
+<div class = "now_you">
+<i class="fas fa-user-circle"></i> 
+
+8. <span class = "score">[1.5 points]</span> In a single piped statement (i.e., without assigning any new object to your global environment):
+
+    a. Read in the file `conus_counties.shp`
+    b. Set the field names to lowercase
+    c. Subset the file to the state of California
+    d. Transform the CRS to EPSG 5070
+    e. Make a map of the file using ggplot() with each county filled using the field of your choosing (e.g., `aes(fill = name)`).
+    
+```{r}
+# 8. read conus_counties.shp, set column names to lowercase, subset
+# to California, and transform the CRS to ESPG 5070.
+# Then, plot conus_counties using ggplot
+
+st_read(file.path(read_dir, 'conus_counties.shp')) %>%
+  set_names(tolower(names(.))) %>%
+  filter(state == 'California') %>%
+  st_transform(crs = 5070) %>%
+  ggplot(aes(fill = aland)) +
+  scale_fill_viridis_b() +
+  geom_sf() +
+  theme_void()
+```
+    
+9. <span class = "score">[1.5 points]</span> Below, I provide a vector of states that are classified as the Western United States. In a single piped statement:
+
+    a. Read in all of the shapefiles
+    b. Set the field names to lowercase
+    c. Subset the file to the `western_states` states (*Hint: Use a control flow construct!*)
+    d. Transform the CRS to EPSG 5070
+    e. Assign the object to your global environment as a list object with the name `western_shapes`. Individual list items should include their original file name, but without the extension `*.shp`.
+    
+```{r q9}
+# 9. Creates a list of western state names
+
+western_states <-
+  c("Arizona",
+    "California",
+    "Colorado",
+    "Idaho",
+    "Montana",
+    "Nevada",
+    "New Mexico",
+    "Oregon",
+    "Utah",
+    "Washington",
+    "Wyoming")
+
+# Builds on question 7 by subsetting to only Western states
+
+western_shapes <- shp_names %>% 
+  purrr::map(
+    ~ file.path(read_dir, .) %>% 
+      st_read() %>%
+      set_names(
+        names(.) %>%
+          tolower()) %>%
+      st_transform(crs = 5070) %>% 
+  {if('state' %in% names(.)){
+    filter(., state %in% western_states)
+  } else{
+    .
+  }}) %>%
+  set_names(
+    str_remove(shp_names, '.shp')) %>% 
+  list2env(.GlobalEnv)
+
+```
+
+10. <span class = "score">[1.5 points]</span> In a single piped statement that uses the `western_shapes$conus_states` and the `prison_systems` table:
+
+    a. Join the data from the `prison_systems` to `western_shapes$conus_states`, maintaining only matching rows
+    b. Subset the data to the fields: `state`, `total_inmate_cases`, and `max_inmate_population_2020`
+    c. Calculate the percentage of inmates in each state that tested positive for Covid-19.
+    d. Generate a map in which the fill color for each state is dependent on the percentage of positive cases in each state.
+    
+
+```{r q10}
+# 10. Plots western states by percentage of inmates who tested positive 
+# for covid in 2020. The prison systems table is loaded here so that it
+# doesn't need to be loaded into R script file's global environment
+
+western_shapes$conus_states %>%
+  left_join(read_csv(
+    file.path(read_dir, 'prison_systems.csv'))) %>%
+  select(c(state, 
+           total_inmate_cases, 
+           max_inmate_population_2020)) %>%
+  mutate(percent_inmate_cases = 
+           total_inmate_cases / max_inmate_population_2020) %>%
+  ggplot(aes(fill = percent_inmate_cases)) +
+  scale_fill_viridis_c(option = "magma") +
+  geom_sf() +
+  theme_void()
+```
+
+</div>
+
+## Ending your session and submission
+
+1. Remove all of the objects assigned to your global environment using either `rm(ls())` or clicking the broom icon in the Environment tab. This will ensure that your knitted document is only dependent on objects that are generated or modified by the code in your R Markdown file.
+
+1. Knit the output. You may receive an error in doing so. If that occurs, it is most likely associated with the code in one of your code chunks. By default, knitting a document will fail if you have an error in your code. Use the error message to try to see where the error occurred (*Note: the line number provided in an error message represents the line number at the top of a given code chunk, not the specific location of the error*). 
+
+1. Attempt to fix any errors that caused knitting failures (if any existed).
+
+1. If you are unable to fix a code error, add a comma at the end of the chunk options for the offending block and type `error = TRUE`.
+
+1. Remove the folder `homework_iteration` from your `data/raw` folder using:
+
+```{r, eval = FALSE}
+# Clear any hidden connections
+
+gc()
+
+# Remove the unzipped homework folder
+
+unlink(
+  'data/raw/homework_iteration',
+  recursive = TRUE)
+```
+
+6. Save this document and your R script file in your project folder and submit both files to Canvas.
+
+
+
+<hr>
+

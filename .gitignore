@@ -5,3 +5,10 @@ packrat/lib*/
 
 # Data files
 /data
+*.csv
+*.metadata
+
+# Web pages
+*.json
+*.css
+*.js
