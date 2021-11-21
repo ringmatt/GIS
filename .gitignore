@@ -5,8 +5,13 @@ packrat/lib*/
 
 # Data files
 /data
+/apps/covid_app_ppol/data
 *.csv
 *.metadata
+*.dbf
+*.prj
+*.shx
+*.shp
 
 # Web pages
 *.json

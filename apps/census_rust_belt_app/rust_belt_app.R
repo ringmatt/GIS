@@ -1,0 +1,353 @@
+
+# setup -------------------------------------------------------------------
+
+library(lubridate)
+library(sf)
+library(tmap)
+library(shiny)
+library(shinydashboard)
+library(tidyverse)
+library(leaflet)
+
+# data --------------------------------------------------------------------
+
+# Create the initial subset of rust belt states
+
+rb <- 
+  c("MI", "MN", "PA", "WI", "IL", "IN", "OH")
+
+# Read in Census et al. data
+
+df_counties <- 
+  read_csv("data/master_dataset_clean.csv") %>%
+  select(!...1) %>%
+  rename(State = state,
+         County = name)
+  
+  # Subset to Upper-Midwest States
+  
+  filter(State %in% belt)
+
+# Read in shapefiles:
+
+counties_shp <-
+  st_read('data/us_counties.shp') %>%
+  
+  # Merge in state fips information
+  
+  left_join(
+    read_csv("data/state_fips.csv"),
+    on = "STATEFP") %>%
+  select(c(GEOID, State, geometry)) %>%
+  mutate(GEOID = as.integer(GEOID)) %>%
+  st_transform(crs = 4326)
+
+# user interface ----------------------------------------------------------
+
+# Create the user interface
+
+ui <- 
+  dashboardPage(
+    
+    dashboardHeader(title = 'Mapping the Rust Belt'),
+    
+    dashboardSidebar(
+      
+      # Choose years
+      
+      dateRangeInput(
+        inputId = 'year_range',
+        label = 'Select a range of years:',
+        start = min(paste0(df_counties$year, "-01-01")),
+        end = max(paste0(df_counties$year, "-01-01")),
+        format = "yyyy",
+        startview = "year"),
+      
+      # Choose set of states
+      
+      selectInput(
+        inputId = 'states',
+        label = 'States:',
+        choices = c('Show all',
+                    sort(
+                      unique(df_counties$State))),
+        multiple = TRUE,
+        selected = rb),
+      
+      # Invert the calculation of the "Rust Score"
+      # Allows for looking at absence of traits as part of "Rust"
+      
+      radioButtons(
+        inputId = 'inverted',
+        label = 'Invert:',
+        choiceNames = c('Yes', 'No'),
+        choiceValues = c("-", ""),
+        selected = ""),
+      
+      # Select features which will be used to calculate the "Rust Score"
+      
+      checkboxGroupInput(inputId = "variables", 
+                  label = "Variables:",
+                  choices = 
+                    c("Inequality" = "inequality_index",
+                    "Income" = "med_home_income",
+                    # "Interest, Dividends, and Rental" = 
+                    #   "agg_interest_div_rental",
+                    "Poverty" = "poverty_rate",
+                    # "Cash Assistance & SNAP" = 
+                    #   "percent_with_cash_pub_assist_or_snap",
+                    "Unemployment" = "civ_unemp",
+                    # "Healthcare Coverage" = "healthcare_coverage",
+                    # "Medicare Coverage" = "medicare_coverage",
+                    "Public Hospitals" = 
+                      "public_hospitals",
+                    "Private Hospitals" = 
+                      "private_hospitals",
+                    # "Non-Profit Hospitals per 10,000 Residents" = 
+                    #   "non_profit_hospitals",
+                    # "Tribal Hospitals per 10,000 Residents" = 
+                    #   "tribal_hospitals",
+                    "Internet Access" = "internet_access",
+                    "Home Value" = "med_home_val",
+                    # "Home Costs" = "med_monthly_home_cost",
+                    # "Rent" = "med_rent",
+                    "Home Construction" = "units",
+                    # "Single-Family Home Construction" = "units_sf",
+                    # "Multi-Family Home Construction" = "units_mf",
+                    # "Work from Home" = "work_from_home",
+                    "Public Transit Usage" = "pub_transit",
+                    # "Bus Stations per 10,000 Residents (2021)" = "bus_2021",
+                    # "Train Stations per 10,000 Residents (2021)" = 
+                    #   "train_2021",
+                    # "Airports (2021)" = "air_2021",
+                    "Latinx Population" = "latinx_pop",
+                    # "White Population" = "white_pop",
+                    "Black Population" = "black_pop",
+                    "Asian Population" = "asian_pop",
+                    "Pacific Islander Population" = "islander_pop",
+                    "Native American Population" = "nativeAm_pop",
+                    "Population Density" = "density",
+                    # "Democrat Vote Percent in Presidential Election" =
+                    #   "votes_dem_percent",
+                    "Republican Vote Percent in Presidential Election" =
+                      "votes_rep_percent"),
+                  selected = c("inequality_index",
+                               "poverty_rate",
+                               "civ_unemp")),
+      
+      
+      
+      # Creates menu to navigate to the map, table, and histogram
+      
+      sidebarMenu(
+        menuItem('Map',
+                 icon = icon('map'),
+                 tabName = 'maps'),
+        
+        menuItem('Table',
+                 icon = icon('table'),
+                 tabName = 'tables'),
+        
+        menuItem('Distribution',
+                 icon = icon('chart-bar'),
+                 tabName = 'charts')
+      )
+    ),
+    
+    # Adds css styling
+    
+    dashboardBody(
+      tags$head(
+        tags$link(
+          rel = 'stylesheet',
+          type = 'text/css',
+          href = 'dashboard_styles.css'
+        )),
+      
+      # Defines each tab in the menu
+      
+      tabItems(
+        
+        # Map tab
+        
+        tabItem(
+          tabName = 'maps',
+          h2('Map'),
+          leafletOutput(outputId = 'rust_map')),
+        
+        # Summary statistics of the "Rust Score"
+        
+        tabItem(
+          tabName = 'tables',
+          h2('Summary table'),
+          dataTableOutput(outputId = 'summary_table')),
+        
+        # Histogram of "Rust Score"s for counties in selected region
+        
+        tabItem(
+          tabName = 'charts',
+          h2('Rust Distribution'),
+          plotOutput(outputId = 'plot_output'))),
+      
+      # Changes the background to silver, or rustic if hovered over
+      
+      tags$head(tags$style(HTML('
+                                /* logo */
+                                .skin-blue .main-header .logo {
+                                background-color: #848482;
+                                color: = #000;
+                                }
+                                
+                                /* logo when hovered */
+                                .skin-blue .main-header .logo:hover {
+                                background-color: #B04010;
+                                color: = #000;
+                                }
+
+                                /* navbar (rest of the header) */
+                                .skin-blue .main-header .navbar {
+                                background-color: #848482;
+                                color: = #000;
+                                }
+
+                                /* main sidebar */
+                                .skin-blue .main-sidebar {
+                                background-color: #848482;
+                                color: = #000;
+                                }
+                                
+                                /* active selected tab in the sidebarmenu */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+                                background-color: #B04010;
+                                }
+                                
+                                /* other links in the sidebarmenu */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+                                background-color: #848482;
+                                color: #000000;
+                                }
+
+                                /* other links in the sidebarmenu when hovered */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+                                background-color: #B04010;
+                                }
+                                
+                                /* toggle button when hovered  */
+                                .skin-blue .main-header .navbar .sidebar-toggle:hover{
+                                background-color: #B04010;
+                                }
+
+                                ')))
+    )
+)
+
+# server ------------------------------------------------------------------
+
+server <- 
+  function(input, output) { 
+    
+    # Data subsetting and summarizing -------------------------------------
+    
+    # Filter Census et al. data by states & year:
+    
+    year_filter <-
+      reactive({
+        df_counties %>%
+          filter(year >= input$year_range[1],
+                 year <= input$year_range[2],
+                 State %in% input$states)})
+    
+    # Filter shapefile by states:
+    
+    shp_filter <-
+      reactive({
+        counties_shp %>%
+          filter(State %in% input$states) %>%
+          select(-c(State))})
+    
+    # Group and average data by county:
+    
+    rust_summarized <-
+      reactive({
+        year_filter() %>%
+          select(c(GEOID, year, input$variables)) %>%
+          group_by(GEOID, year) %>%
+          summarize(
+            across(input$variables,
+                   ~ mean(.x, na.rm = TRUE)))})
+    
+    # Create the Rust Score using each selected variable:
+    
+    rust <-
+      reactive({
+        df_counties %>%
+          
+          # Creates a new column summing each selected feature
+          
+          mutate(`Rust Score` = rowMeans(
+            select(., input$variables),
+            na.rm = TRUE))
+        
+        })
+    
+    # Outputs -------------------------------------------------------------
+    
+    # Map:
+    
+    output$rust_map <-
+      renderTmap(
+        
+        # Merge shapefile
+        
+        shp_filter() %>%
+          left_join(
+            rust(),
+            by = "GEOID") %>%
+
+          # Add colored polygons to the map
+          
+          tm_shape(.) +
+          tm_polygons(col = "Rust Score",
+                      alpha = 0.1,
+                      border.alpha = 0.05,
+                      palette = paste0(input$inverted, "Oranges"),
+                      id = "County",
+                      popup.vars = c("County", "State", "Rust Score"),
+                      popup.format = list(digits = 2)) +
+          
+          # Fit the initial zoom to the states we selected
+          
+          tm_view(bbox =
+                    st_bbox(shp_filter())))
+    
+    # Summary table of Rust Score:
+    
+    output$summary_table <-
+      renderDataTable(
+        rust() %>%
+          select(c(`Rust Score`)) %>%
+          summary(digits = 1)
+      )
+    
+    # Histogram of county Rust Scores:
+    
+    output$plot_output <-
+      renderPlot(
+        rust() %>%
+          filter(State %in% input$states) %>%
+          ggplot(aes(x = `Rust Score`,
+                     fill = ..count..)) +
+          geom_histogram(bins = 20) +
+          
+          # Color based on number of counties per bin
+          
+          scale_fill_gradient(low = "grey",
+                              high = "#C46210") +
+          labs(y = "Count") + 
+          theme_minimal() +
+          theme(legend.position = ""))
+  }
+
+# knit and run app --------------------------------------------------------
+
+shinyApp(ui, server)
