@@ -11,11 +11,6 @@ library(leaflet)
 
 # data --------------------------------------------------------------------
 
-# Create the initial subset of rust belt states
-
-rb <- 
-  c("MI", "MN", "PA", "WI", "IL", "IN", "OH")
-
 # Read in Census et al. data
 
 df_counties <- 
@@ -23,10 +18,6 @@ df_counties <-
   select(!...1) %>%
   rename(State = state,
          County = name)
-  
-  # Subset to Upper-Midwest States
-  
-  filter(State %in% belt)
 
 # Read in shapefiles:
 
@@ -68,11 +59,10 @@ ui <-
       selectInput(
         inputId = 'states',
         label = 'States:',
-        choices = c('Show all',
-                    sort(
-                      unique(df_counties$State))),
+        choices = c(sort(
+          unique(df_counties$State))),
         multiple = TRUE,
-        selected = rb),
+        selected = "MI"),
       
       # Invert the calculation of the "Rust Score"
       # Allows for looking at absence of traits as part of "Rust"
@@ -131,9 +121,7 @@ ui <-
                     #   "votes_dem_percent",
                     "Republican Vote Percent in Presidential Election" =
                       "votes_rep_percent"),
-                  selected = c("inequality_index",
-                               "poverty_rate",
-                               "civ_unemp")),
+                  selected = c("poverty_rate")),
       
       
       
@@ -253,9 +241,10 @@ server <-
     year_filter <-
       reactive({
         df_counties %>%
-          filter(year >= input$year_range[1],
-                 year <= input$year_range[2],
-                 State %in% input$states)})
+          filter(
+            year >= input$year_range[1],
+            year <= input$year_range[2],
+            State %in% input$states)})
     
     # Filter shapefile by states:
     

@@ -17,3 +17,13 @@ packrat/lib*/
 *.json
 *.css
 *.js
+
+# Images
+*.png
+*.jpg
+*.gif
+*.jpeg
+*.pdf
+
+# Presentations
+*.pptx

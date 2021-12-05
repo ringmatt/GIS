@@ -14,6 +14,14 @@ df_counties <-
   read_csv("data/master_dataset.csv") %>%
   select(!...1)
 
+# Read in census manufacturing and natural resource employment decline #s
+
+df_industry <-
+  read_csv("data/county_industry_decline.csv") %>%
+  as_tibble() %>%
+  mutate(GEOID = 
+           as.double(GEOID))
+
 # wrangling -----------------------------------------------------------
 
 # Lists of states by region
@@ -82,6 +90,11 @@ df_counties <-
   
   select(-c(pop, land_area)) %>%
   
+  # Join manufacturing and natural resource industry data
+  
+  left_join(df_industry,
+            on = "GEOID") %>%
+  
   # Scales all variables from 0 to 1
   
   mutate(
@@ -89,14 +102,14 @@ df_counties <-
              units:votes_other_percent,
              density),
            ~ (.x-min(.x, na.rm = TRUE))/
-             (max(.x, na.rm = TRUE)-min(.x, na.rm = TRUE)))) %>%
+             (max(.x, na.rm = TRUE)-min(.x, na.rm = TRUE))))
   
   # Label states by region
   
-  mutate(region =
-           case_when(
-             
-           ))
+  # mutate(region =
+  #          case_when(
+  #            
+  #          ))
 
 # save ----------------------------------------------------------------
 
