@@ -1,22 +1,6 @@
-1. Synthesize Feedback
-2. Finish non-technical parts of presentation
-3. Edit Features
-	* Ensure scores are scaled
-	* Change in Income, Inequality, Population, Mining, Manufacturing, Employment, Poverty, Housing Permits, Homelessness, Property Values, Increasing foreign born populations
-	* Have a pair of dropdown menus for date range inputs
 4. Edit Visualizations
-	* Diverging Binary Colorscale
 	* Interactive Leaflet w/ Filters
-	* Static Rust TMap
-	* Static Recovery TMap
-5. Summary Table
-	* Ensure reacts to selections
-	* Compare different states
-6. Distributions
-	* Compare between states
-		- Separate chart for each?
 7. Edit App
-	* Check for conflicting reactive objects: https://shiny.rstudio.com/articles/execution-scheduling.html 
 	* Add a button for execution
 	* Add landing page that describes purpose of app
 	* CSS

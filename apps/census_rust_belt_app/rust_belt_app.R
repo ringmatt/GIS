@@ -30,6 +30,8 @@ counties_shp <-
     read_csv("data/state_fips.csv"),
     on = "STATEFP") %>%
   select(c(GEOID, State, geometry)) %>%
+  filter(State %in% 
+           unique(df_counties$State)) %>%
   mutate(GEOID = as.integer(GEOID)) %>%
   st_transform(crs = 4326)
 
@@ -44,16 +46,6 @@ ui <-
     
     dashboardSidebar(
       
-      # Choose years
-      
-      dateRangeInput(
-        inputId = 'year_range',
-        label = 'Select a range of years:',
-        start = min(paste0(df_counties$year, "-01-01")),
-        end = max(paste0(df_counties$year, "-01-01")),
-        format = "yyyy",
-        startview = "year"),
-      
       # Choose set of states
       
       selectInput(
@@ -62,66 +54,32 @@ ui <-
         choices = c(sort(
           unique(df_counties$State))),
         multiple = TRUE,
-        selected = "MI"),
-      
-      # Invert the calculation of the "Rust Score"
-      # Allows for looking at absence of traits as part of "Rust"
-      
-      radioButtons(
-        inputId = 'inverted',
-        label = 'Invert:',
-        choiceNames = c('Yes', 'No'),
-        choiceValues = c("-", ""),
-        selected = ""),
+        selected = c(sort(
+          unique(df_counties$State)))),
       
       # Select features which will be used to calculate the "Rust Score"
       
       checkboxGroupInput(inputId = "variables", 
-                  label = "Variables:",
+                  label = "Recovery Indicators:",
                   choices = 
-                    c("Inequality" = "inequality_index",
-                    "Income" = "med_home_income",
-                    # "Interest, Dividends, and Rental" = 
-                    #   "agg_interest_div_rental",
-                    "Poverty" = "poverty_rate",
-                    # "Cash Assistance & SNAP" = 
-                    #   "percent_with_cash_pub_assist_or_snap",
-                    "Unemployment" = "civ_unemp",
-                    # "Healthcare Coverage" = "healthcare_coverage",
-                    # "Medicare Coverage" = "medicare_coverage",
-                    "Public Hospitals" = 
-                      "public_hospitals",
-                    "Private Hospitals" = 
-                      "private_hospitals",
-                    # "Non-Profit Hospitals per 10,000 Residents" = 
-                    #   "non_profit_hospitals",
-                    # "Tribal Hospitals per 10,000 Residents" = 
-                    #   "tribal_hospitals",
-                    "Internet Access" = "internet_access",
-                    "Home Value" = "med_home_val",
-                    # "Home Costs" = "med_monthly_home_cost",
-                    # "Rent" = "med_rent",
-                    "Home Construction" = "units",
-                    # "Single-Family Home Construction" = "units_sf",
-                    # "Multi-Family Home Construction" = "units_mf",
-                    # "Work from Home" = "work_from_home",
-                    "Public Transit Usage" = "pub_transit",
-                    # "Bus Stations per 10,000 Residents (2021)" = "bus_2021",
-                    # "Train Stations per 10,000 Residents (2021)" = 
-                    #   "train_2021",
-                    # "Airports (2021)" = "air_2021",
-                    "Latinx Population" = "latinx_pop",
-                    # "White Population" = "white_pop",
-                    "Black Population" = "black_pop",
-                    "Asian Population" = "asian_pop",
-                    "Pacific Islander Population" = "islander_pop",
-                    "Native American Population" = "nativeAm_pop",
-                    "Population Density" = "density",
-                    # "Democrat Vote Percent in Presidential Election" =
-                    #   "votes_dem_percent",
-                    "Republican Vote Percent in Presidential Election" =
-                      "votes_rep_percent"),
-                  selected = c("poverty_rate")),
+                    c("Population" = "pop_change",
+                      "Foreign Born Population Change" =
+                        "foreign_born_pop_percent_change",
+                      "Income" = "income_change",
+                      "Inequality Decrease" = "inequality_decrease",
+                      "Poverty Decrease" = "poverty_decrease",
+                      "Homelessness Decrease" = "homelessness_decrease",
+                      "Manufacturing Employment Change" =
+                        "manufacturing_percent_change",
+                      "Natural Resources Employment Change" =
+                        "natural_resources_percent_change",
+                      "Home Value" = "home_val_change",
+                      "Home Construction" = 
+                        "housing_construction_increase"),
+                  selected = c("pop_change", "income_change",
+                               "home_val_change", 
+                               "housing_construction_increase",
+                               "manufacturing_percent_change")),
       
       
       
@@ -175,57 +133,7 @@ ui <-
         tabItem(
           tabName = 'charts',
           h2('Rust Distribution'),
-          plotOutput(outputId = 'plot_output'))),
-      
-      # Changes the background to silver, or rustic if hovered over
-      
-      tags$head(tags$style(HTML('
-                                /* logo */
-                                .skin-blue .main-header .logo {
-                                background-color: #848482;
-                                color: = #000;
-                                }
-                                
-                                /* logo when hovered */
-                                .skin-blue .main-header .logo:hover {
-                                background-color: #B04010;
-                                color: = #000;
-                                }
-
-                                /* navbar (rest of the header) */
-                                .skin-blue .main-header .navbar {
-                                background-color: #848482;
-                                color: = #000;
-                                }
-
-                                /* main sidebar */
-                                .skin-blue .main-sidebar {
-                                background-color: #848482;
-                                color: = #000;
-                                }
-                                
-                                /* active selected tab in the sidebarmenu */
-                                .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-                                background-color: #B04010;
-                                }
-                                
-                                /* other links in the sidebarmenu */
-                                .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-                                background-color: #848482;
-                                color: #000000;
-                                }
-
-                                /* other links in the sidebarmenu when hovered */
-                                .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-                                background-color: #B04010;
-                                }
-                                
-                                /* toggle button when hovered  */
-                                .skin-blue .main-header .navbar .sidebar-toggle:hover{
-                                background-color: #B04010;
-                                }
-
-                                ')))
+          plotOutput(outputId = 'plot_output')))
     )
 )
 
@@ -236,16 +144,6 @@ server <-
     
     # Data subsetting and summarizing -------------------------------------
     
-    # Filter Census et al. data by states & year:
-    
-    year_filter <-
-      reactive({
-        df_counties %>%
-          filter(
-            year >= input$year_range[1],
-            year <= input$year_range[2],
-            State %in% input$states)})
-    
     # Filter shapefile by states:
     
     shp_filter <-
@@ -254,29 +152,21 @@ server <-
           filter(State %in% input$states) %>%
           select(-c(State))})
     
-    # Group and average data by county:
-    
-    rust_summarized <-
-      reactive({
-        year_filter() %>%
-          select(c(GEOID, year, input$variables)) %>%
-          group_by(GEOID, year) %>%
-          summarize(
-            across(input$variables,
-                   ~ mean(.x, na.rm = TRUE)))})
-    
     # Create the Rust Score using each selected variable:
     
     rust <-
       reactive({
         df_counties %>%
           
+          # Filter by states
+          
+          filter(State %in% input$states) %>%
+          
           # Creates a new column summing each selected feature
           
-          mutate(`Rust Score` = rowMeans(
+          mutate(`Recovery Score` = rowMeans(
             select(., input$variables),
             na.rm = TRUE))
-        
         })
     
     # Outputs -------------------------------------------------------------
@@ -296,12 +186,14 @@ server <-
           # Add colored polygons to the map
           
           tm_shape(.) +
-          tm_polygons(col = "Rust Score",
-                      alpha = 0.1,
+          tm_polygons(col = "Recovery Score",
+                      alpha = 0.75,
                       border.alpha = 0.05,
-                      palette = paste0(input$inverted, "Oranges"),
+                      palette = "BrBG",
+                      style = "cont",
                       id = "County",
-                      popup.vars = c("County", "State", "Rust Score"),
+                      popup.vars = c("County", "State",
+                                     "Recovery Score"),
                       popup.format = list(digits = 2)) +
           
           # Fit the initial zoom to the states we selected
@@ -314,27 +206,39 @@ server <-
     output$summary_table <-
       renderDataTable(
         rust() %>%
-          select(c(`Rust Score`)) %>%
-          summary(digits = 1)
+          group_by(c(State)) %>%
+          summarize(
+            `Recovery Score IQR` = quantile(`Recovery Score`, probs = 0.75)-
+              quantile(`Recovery Score`, probs = 0.25),
+            `Maximum Recovery Score` = max(`Recovery Score`),
+            `75th Percentile Recovery Score` = 
+              quantile(`Recovery Score`, probs = 0.75),
+            `Average Recovery Score` = mean(`Recovery Score`),
+            `25th Percentile Recovery Score` = 
+              quantile(`Recovery Score`, probs = 0.25),
+            `Minimum Recovery Score` = min(`Recovery Score`)) %>% 
+          arrange(`Average Recovery Score`) %>%
+          mutate(across(is.numeric, round, 3))
       )
     
-    # Histogram of county Rust Scores:
+    # Histogram of county Recovery Scores:
     
     output$plot_output <-
       renderPlot(
         rust() %>%
-          filter(State %in% input$states) %>%
-          ggplot(aes(x = `Rust Score`,
-                     fill = ..count..)) +
-          geom_histogram(bins = 20) +
+          filter(State %in% input$states[1:5]) %>%
+          arrange(State) %>%
+          ggplot(aes(x = `Recovery Score`,
+                     color = State)) +
+          stat_density(geom="line",position="identity") +
           
           # Color based on number of counties per bin
           
-          scale_fill_gradient(low = "grey",
-                              high = "#C46210") +
-          labs(y = "Count") + 
-          theme_minimal() +
-          theme(legend.position = ""))
+          scale_color_brewer(palette = "Dark2") +
+          
+          labs(y = "Count",
+               color = "State") + 
+          theme_minimal())
   }
 
 # knit and run app --------------------------------------------------------

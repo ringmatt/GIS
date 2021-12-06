@@ -14,31 +14,38 @@ df_counties <-
   read_csv("data/master_dataset.csv") %>%
   select(!...1)
 
-# Read in census manufacturing and natural resource employment decline #s
+# Read in census manufacturing and natural resource employment change #s
 
 df_industry <-
-  read_csv("data/county_industry_decline.csv") %>%
+  read_csv("data/county_industry_change.csv") %>%
+  as_tibble() %>%
+  mutate(GEOID = 
+           as.double(GEOID))
+
+# Read in foreign born #s
+
+df_foreign_born <-
+  read_csv("data/county_foreign_born_change.csv") %>%
   as_tibble() %>%
   mutate(GEOID = 
            as.double(GEOID))
 
 # wrangling -----------------------------------------------------------
 
-# Lists of states by region
+# Create eastern US subset
 
-mw <- 
-  c("MI", "MN", "PA", "WI", "IL", "IN", "OH", "IA", "MO", "ND", "SD", "NE",
-    "KS")
-
-ne <-
-  c("ME", "NH", "VT", "MA", "CT", "RI", "PA", "NY", "NJ", "MD", "DE", "DC")
-
-so <-
-  c("TX", "OK", "AR", "LA", "MS", "TN", "AL", "KY", "WV", "")
+east_plus <- 
+  c("MI", "MN", "PA", "WI", "IL", "IN", "OH", "ME", "NH", "VT", "MA", "CT",
+    "RI", "PA", "NY", "NJ", "MD", "DE", "DC", "MS", "TN", "AL", "KY", "WV",
+    "GA", "NC", "SC", "VA", "LA", "AR", "MO", "IA")
 
 df_counties <- 
   
   df_counties %>%
+  
+  # Subset to Eastern US states + a buffer
+  
+  filter(state %in% east_plus) %>%
   
   # Fill forward rural level and most recent presidential election columns
   
@@ -86,30 +93,51 @@ df_counties <-
            function(x){
              x/pop*10000})) %>%
   
-  # Remove extra columns
+  # Subset to important columns
   
-  select(-c(pop, land_area)) %>%
+  select(c(GEOID, name, state, year, pop, med_home_income, inequality_index,
+           poverty_rate,
+           med_home_val, units, exp_homelessness)) %>%
   
   # Join manufacturing and natural resource industry data
   
   left_join(df_industry,
             on = "GEOID") %>%
   
+  # Join foreign born percent data
+  
+  left_join(df_foreign_born,
+            on = "GEOID")  %>%
+  
+  # Aggregate to one value per county
+  
+  filter(year == 2010 | year == 2019) %>%
+  group_by(GEOID) %>%
+  mutate(pop_change = c(0, diff(pop)/
+                          pop[2]),
+         income_change = c(0,diff(med_home_income)),
+         poverty_decrease = c(0,diff(poverty_rate)*-1),
+         inequality_decrease = c(0,diff(inequality_index)*-1),
+         home_val_change = c(0,diff(med_home_val)),
+         housing_construction_increase = c(0, diff(units)),
+         homelessness_decrease = c(0,diff(exp_homelessness)*-1)) %>%
+  ungroup() %>%
+  filter(year == 2019) %>%
+  select(c(GEOID, name, state, pop_change, 
+           income_change,
+           poverty_decrease, inequality_decrease,
+           home_val_change, housing_construction_increase,
+           homelessness_decrease,
+           manufacturing_percent_change,
+           natural_resources_percent_change,
+           foreign_born_pop_percent_change)) %>% 
+  
   # Scales all variables from 0 to 1
   
   mutate(
-    across(c(inequality_index:civ_emp,
-             units:votes_other_percent,
-             density),
+    across(pop_change:foreign_born_pop_percent_change,
            ~ (.x-min(.x, na.rm = TRUE))/
              (max(.x, na.rm = TRUE)-min(.x, na.rm = TRUE))))
-  
-  # Label states by region
-  
-  # mutate(region =
-  #          case_when(
-  #            
-  #          ))
 
 # save ----------------------------------------------------------------
 
