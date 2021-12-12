@@ -12,6 +12,7 @@ packrat/lib*/
 *.prj
 *.shx
 *.shp
+*.dta
 
 # Web pages
 *.json
@@ -27,3 +28,11 @@ packrat/lib*/
 
 # Presentations
 *.pptx
+
+# Text
+*.doc
+*.docx
+*.txt
+
+# Compressed files
+*.zip

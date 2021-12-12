@@ -1,0 +1,401 @@
+---
+title: "Description of Analysis"
+author: "Matt Ring"
+date: "12/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+***Note:*** None of the following code has been run here. All code snippets were taken from other scripts used directly or indirectly for this project.
+
+# Data Prep
+
+Data was collected from the Census either via direct download or the following functions, based on the tidycensus package and accessing the Census API.
+
+```{r}
+extract5YearACSData <- function(group, 
+                                geo = "county subdivision", 
+                                year = 2012, states = c(NULL), 
+                                counties = c(NULL), 
+                                geometry = FALSE, 
+                                specificity = 1, cb = F){
+  'This function pulls ACS 5-Year data based on a particular group, year,
+  and as many states as desired
+    Inputs:
+    group     - A 1 letter, 5 digit code representing a unique census data 
+                table. See the link in the markdown above for more 
+                information.
+    geo       - A choice of the geography to hone in on
+    year      - Year, as an integer, between 2005 and 2019 to extract data 
+                from
+    states    - States, as a vector of strings, from 01-56 Excluding 
+                3, 7, 14, 43, 52
+    counties  - List of vectors, where each vector is named for 
+                a given state
+    geometry  - Useful for plotting on choropleths. Returns an sf tibble 
+                instead of a regular tibble
+    specificity - The higher this value, the more specific the variables 
+                  allowed in the final dataset
+    cb  - Stands for "cartographic boundaries". When false, this will use 
+          the TIGER/Line files. When true, will use the tigris package 
+          defaults. 
+          MUST BE SET TO FALSE FOR TRACT DATA TO WORK.
+    
+    Outputs: The outputs are returned in a list
+    acsData   - A dataframe where each row is a state and each column 
+                is a variable
+    labels    - The full description of each variable
+    '
+  
+  # Pulls a list of variables for the chosen group and year
+  data <- listCensusMetadata(
+    name = "acs/acs5",
+    vintage = year,
+    group = group)
+  
+  # Removes all annotations, which cuts the size in half
+  data <- data[which(data$predicateType != 'string'),]
+  
+  # Removes `Total!!` from all labels and changes all `!!` to `_`
+  data$label <- gsub("!!", "_", data$label)
+  #data$label <- gsub("_Total", "", data$label)
+  # These are here to deal with new labeling in 2019 data
+  data$label <- gsub(":", "", data$label)
+  
+  
+  # Sorts the data by name
+  data <- data[order(data$name),]
+  
+  # Saves both the names and labels in the data
+  labels <- unique(data$label)
+  
+  # Initializes the final dataset
+  acsData <- data.frame()
+  
+  for (i in 1:length(states)){
+    
+    # Only iterate over select counties if specified
+    if (length(counties) == 0){
+      acsDataTemp <- get_acs(geography = geo, 
+                             table = group, 
+                             year = year,
+                             state = states[i], 
+                             county = NULL, 
+                             geometry = geometry, 
+                             summary_var = paste0(group, "_001"), cb = cb)
+      
+      # Adds identifying columns
+      acsDataTemp$year <- year
+      acsDataTemp$state <- states[i]
+      
+      # Extracts the county name
+      acsDataTemp$county_name <- 
+        str_match(acsDataTemp$NAME, ",\\s*(.*?)\\s*,")[,2]
+      
+      # Extracts the state name
+      acsDataTemp$state_name <- 
+        trimws(gsub(".*,", "\\1", acsDataTemp$NAME))
+      
+      # Extracts the sub-county name
+      acsDataTemp$NAME <- 
+        gsub(",.*", "\\1", acsDataTemp$NAME)
+      
+      # Merges this new data with the current data frame
+      # rbind.fill will fill any missing columns with NAs
+      acsData <- 
+        rbind.fill(acsData, acsDataTemp)
+    }else{
+      for (j in 1:length(counties)){
+        acsDataTemp <- get_acs(geography = geo, 
+                               table = group,
+                               year = year,
+                               state = states[i], 
+                               county = counties[j], 
+                               geometry = geometry, 
+                               summary_var = paste0(group, "_001"), cb = cb)
+        
+        # Adds identifying columns
+        acsDataTemp$year <- year
+        acsDataTemp$state <- states[i]
+        acsDataTemp$county <- counties[j]
+        
+        # Extracts the county name
+        acsDataTemp$county_name <- 
+          str_match(
+            acsDataTemp$NAME, ",\\s*(.*?)\\s*,")[,2]
+        
+        # Extracts the state name
+        acsDataTemp$state_name <- 
+          trimws(
+            gsub(".*,", "\\1", acsDataTemp$NAME))
+        
+        # Extracts the sub-county name
+        acsDataTemp$NAME <- 
+          gsub(",.*", "\\1", acsDataTemp$NAME)
+        
+        # Merges this new data with the current data frame
+        # rbind.fill will fill any missing columns with NAs
+        acsData <- 
+          rbind.fill(acsData, acsDataTemp)
+      }
+    }
+    
+  }
+  
+  # Removes state and other names from sub-county names
+  acsData$NAME <- 
+    gsub(",.*", "\\1", acsData$NAME)
+  
+  # Removes the "Margin of Error" variable names
+  labels <- labels[c(TRUE, FALSE)]
+  
+  # Changes the column names to readable labels
+  map <-
+    setNames(labels, 
+             unique(acsData$variable))
+  
+  acsData$variable <- 
+    map[unlist(acsData$variable)]
+  
+  # Removes variables to the requested level of specificity
+  acsData$LayersOfAbstraction <- 
+    lengths(
+      regmatches(acsData$variable, 
+                 gregexpr("_", acsData$variable)))
+  acsData <- 
+    subset(acsData, LayersOfAbstraction <= specificity)
+  
+  acsData <- 
+    subset(acsData, select = -c(LayersOfAbstraction))
+  
+  # Returns both the dataframe and corresponding labels
+  return(acsData)
+}
+```
+
+```{r}
+temporalData5YearACS <- function(group, 
+                                 geo = "county subdivision", 
+                                 years = c(2012), 
+                                 states = c(NULL), 
+                                 counties = c(NULL), 
+                                 geometry = FALSE, 
+                                 specificity = 1, cb = F){
+  '
+  This function pulls uses ACS 5-Year data to create a dataframe of 
+  different census variables by state and year
+  
+  Packages Required   - censusapi, plyr and dplyr
+  Functions Required  - extract1YearACSData & changeColNames
+  Inputs:
+  group     - A 1 letter, 5 digit code representing a unique census 
+              data table. See the link in the markdown above for more 
+              information.
+  geo - A choice of the geography to hone in on
+  years      - Years, as a list of integers, between 2009 and 2018 to 
+               extract data from
+  states    - States, as a vector of strings, from 01-56 
+              Excluding 3, 7, 14, 43, 52
+  counties  - List of vectors, where each vector is for a given 
+              state\'s counties
+  specificity - The higher this value, the more specific the variables 
+                allowed in the final dataset
+  cb  - Stands for "cartographic boundaries". When false, this will use the 
+        TIGER/Line files. When true, will use the tigris package defaults. 
+        MUST BE SET TO FALSE FOR TRACT DATA TO WORK.
+  
+  Outputs: The outputs are returned in a list
+  df        - A dataframe where each row is a given state and year
+  '
+  
+  # Creates a new dataframe
+  df <- data.frame()
+  
+  # Loops through the years
+  for (yr in years){
+    
+    # Runs the function to extract ACS data, then saves the data and labels
+    dfTemp <- 
+      extract5YearACSData(group, 
+                          geo, 
+                          year = yr, 
+                          states = states, 
+                          counties = counties, 
+                          geometry = geometry, 
+                          specificity = specificity, cb = cb)
+    
+    # Binds to the existing dataframe
+    df <- 
+      rbind.fill(df, dfTemp)
+  }
+  
+  # Returns the dataframe
+  return(df)
+  
+}
+```
+
+```{r}
+# Example Census data extraction function
+
+temporalData5YearACS("B19083", geo = "county", 
+                           years = 2010:2019, states = st, 
+                           geometry = F, specificity = 2)
+```
+
+After collection, data was merged to the county-year level. Counties were then subsetted to only Eastern US states, minus Florida. Missing housing construction values were then filled in with zeros.
+
+## Normalize
+
+Many Census values needed to be normalized by population, as otherwise they were not comparable across counties. As such, data on interest, transit, demographics, and employment were normalized per capita. Construction, transit, hospital, and homelessness data were normalized per 10,000 residents. All other values were already normalized. The scripts used to modify the data are included below.
+
+```{r}
+# Standardize columns by population
+  
+mutate(
+  across(c(agg_interest_div_rental,
+           pub_transit, 
+           work_from_home, 
+           latinx_pop:other_pop,
+           civ_unemp,
+           civ_emp),
+         function(x){
+           x/pop})) %>%
+
+# Standardize columns per 10k residents
+
+mutate(
+  across(c(units:train_2021,
+           ems_hospitals:exp_homelessness),
+         function(x){
+           x/pop*10000})) %>%
+```
+
+
+After normalizing by population, these data were then subsetted to features of interest: income, poverty, inequality, home values, home construction, manufacturing employment, natural resource employment, population, and foreign born population.
+
+## Difference
+
+With these data normalized, the next step was to assess changes in value as deindustrialization is a process over time moreso than a static state. As such, the most recent value for every feature was subtracted by the oldest value, per county. Direction of each feature was adjusted such that positive values indicate positive outcomes. Population was recorded as a percent change. For all but three features, the time period was 2010-2019. For manufacturing and natural resource employment, values were taken from 2000-2010. This was done as manufacturing in the US declined sharply during this period in time. Finally, foreign born population was collected from 2000-2019. The script for this step is shown below.
+  
+```{r}
+# Aggregate to one value per county, taking the difference between most
+# recent and oldest data available
+
+filter(year == 2010 | year == 2019) %>%
+group_by(GEOID) %>%
+mutate(pop_change = c(0, diff(pop)/
+                        pop[2]),
+       income_change = c(0,diff(med_home_income)),
+       poverty_decrease = c(0,diff(poverty_rate)*-1),
+       inequality_decrease = c(0,diff(inequality_index)*-1),
+       home_val_change = c(0,diff(med_home_val)),
+       housing_construction_increase = c(0, diff(units))) %>%
+ungroup()
+```
+
+
+## Standardize
+
+Finally, every numeric variable was standardized to a Z-Score. This centered all values around the mean while still preserving variance. The necessary script is included below.
+  
+```{r}
+# Scales variables to z-scores
+
+mutate(df,
+    across(pop_change:foreign_born_pop_percent_change,
+           ~ (.x-mean(.x, na.rm = TRUE))/
+             (sd(.x, na.rm = TRUE))))
+```
+
+# Calculating "Recovery" Scores
+
+After preprocessing, a single "Recovery Score" was calculated using population, income, home value, home construction, and manufacturing decline. The set of features used is modifiable in the app though. To determine the score, Principal Component Analysis (PCA) was used. PCA was selected as it helps avoid weighting redundant features too heavily, as it condensed all of the variables to a single feature that preserved the most variance. Necessary script for creating the Recovery Score is shown below.
+
+```{r}
+
+ mutate(`Recovery Score` =
+           prcomp(
+             select(.,
+                    
+                    # Select columns to build Recovery Score with
+                    
+                    c(pop_change, income_change,
+                      home_val_change, 
+                      housing_construction_increase,
+                      manufacturing_percent_change)),
+             rank. = 1,
+             center = TRUE,
+             retx = TRUE)$x[,1])
+
+```
+
+# Local Autocorrelation
+
+Spatial trends in Recovery Scores were analyzed using the local autocorrelation statistic, Local Moran's statistic. This tells us whether a county is similar to its geospatial neighbors.
+
+## Values & Significance
+
+To calculate Local Moran's, which counties were neighbors was first calculated. Second, these data on neighboring counties was provided to the function "localmoran", which determined the value and significance of Local Moran's. Finally, each county's score and significance were added to the county-level Recovery Score dataset as new columns.
+
+```{r}
+# Calculates which counties are neighbors
+
+neighbors <- poly2nb(counties_shp)
+
+# Determines whether there is local spatial autocorrelation
+
+local <- localmoran(x = counties_shp$`Recovery Score`, 
+                    listw = nb2listw(neighbors, 
+                                     style = "W",
+                                     zero.policy = TRUE))
+
+# Binds results to original shapefile
+
+moran_map <- cbind(counties_shp, local)
+```
+
+## Map
+
+Shown below is code for plotting the Local Moran's values as a choropleth for only counties significant to p = 0.1. 
+
+```{r}
+# Download and create the basemap
+
+osm <- tmaptools::read_osm(bb(moran_map), ext = 1.05)
+
+# Create the basemap
+
+tm_shape(osm) +
+  
+  tm_rgb() +
+  
+  # Plots moran values
+  # Positive values indicate similar surrounding values
+
+  tm_shape(moran.map %>%
+             
+             # Filters for only significant values
+             
+             filter(Pr.z....E.Ii.. < 0.1)) +
+  
+  # Add polygons filled with corresponding local moran stats
+  
+  tm_polygons(col = "Ii",
+              alpha = 0.4,
+              border.alpha = 0.1,
+              style = "quantile",
+              palette = "Reds",
+              title = "Significant Local\nMoran Statistics") +
+  
+  # Adjusts where the legend is located
+  
+  tm_legend(legend.position = c("right", "bottom"))
+```
+
+# Other Visualizations
+
+An interactive visualization, summary tables, and density plots were also included in the shiny app analysis. The interactive visualization was created using tmap as done above. Summary tables included info on the quartiles of each selected state's Recovery Scores. Finally, the density plots showed the distribution of the first five selected states' Recovery Scores.

@@ -32,9 +32,9 @@ df_foreign_born <-
 
 # wrangling -----------------------------------------------------------
 
-# Create eastern US subset
+# Create list of Eastern US states (minus Florida)
 
-east_plus <- 
+east_plus <-
   c("MI", "MN", "PA", "WI", "IL", "IN", "OH", "ME", "NH", "VT", "MA", "CT",
     "RI", "PA", "NY", "NJ", "MD", "DE", "DC", "MS", "TN", "AL", "KY", "WV",
     "GA", "NC", "SC", "VA", "LA", "AR", "MO", "IA")
@@ -43,29 +43,14 @@ df_counties <-
   
   df_counties %>%
   
-  # Subset to Eastern US states + a buffer
+  # Subset to Eastern US
   
   filter(state %in% east_plus) %>%
   
-  # Fill forward rural level and most recent presidential election columns
+  # Fill missing home construction values with zeros
   
-  group_by(GEOID) %>%
-  
-  fill(votes_dem_percent:rural_level,
-       .direction = "down") %>%
-  
-  ungroup() %>%
-  
-  # Create a column for population density
-  
-  mutate(density = land_area/pop) %>%
-  
-  # Fill missing transit, hospital, and construction columns with zeros
-  
-  mutate(
-    across(units:tribal_hospitals,
-           ~if_else(
-             is.na(.x), 0, .x))) %>%
+  mutate(units = 
+           if_else(is.na(units), 0, units)) %>%
   
   # Remove the sparsest columns
   
@@ -95,9 +80,9 @@ df_counties <-
   
   # Subset to important columns
   
-  select(c(GEOID, name, state, year, pop, med_home_income, inequality_index,
-           poverty_rate,
-           med_home_val, units, exp_homelessness)) %>%
+  select(c(GEOID, name, state, year, pop, 
+           med_home_income, inequality_index,
+           poverty_rate, med_home_val, units)) %>%
   
   # Join manufacturing and natural resource industry data
   
@@ -109,7 +94,8 @@ df_counties <-
   left_join(df_foreign_born,
             on = "GEOID")  %>%
   
-  # Aggregate to one value per county
+  # Aggregate to one value per county, taking the difference between most
+  # recent and oldest data available
   
   filter(year == 2010 | year == 2019) %>%
   group_by(GEOID) %>%
@@ -119,25 +105,26 @@ df_counties <-
          poverty_decrease = c(0,diff(poverty_rate)*-1),
          inequality_decrease = c(0,diff(inequality_index)*-1),
          home_val_change = c(0,diff(med_home_val)),
-         housing_construction_increase = c(0, diff(units)),
-         homelessness_decrease = c(0,diff(exp_homelessness)*-1)) %>%
+         housing_construction_increase = c(0, diff(units))) %>%
   ungroup() %>%
   filter(year == 2019) %>%
+  
+  # Select only the new aggregate variables
+  
   select(c(GEOID, name, state, pop_change, 
            income_change,
            poverty_decrease, inequality_decrease,
            home_val_change, housing_construction_increase,
-           homelessness_decrease,
            manufacturing_percent_change,
            natural_resources_percent_change,
            foreign_born_pop_percent_change)) %>% 
   
-  # Scales all variables from 0 to 1
+  # Scales variables to z-scores
   
   mutate(
     across(pop_change:foreign_born_pop_percent_change,
-           ~ (.x-min(.x, na.rm = TRUE))/
-             (max(.x, na.rm = TRUE)-min(.x, na.rm = TRUE))))
+           ~ (.x-mean(.x, na.rm = TRUE))/
+             (sd(.x, na.rm = TRUE))))
 
 # save ----------------------------------------------------------------
 

@@ -8,6 +8,16 @@ library(shiny)
 library(shinydashboard)
 library(tidyverse)
 library(leaflet)
+library(grid)
+library(gridExtra)
+library(spgwr)
+library(sp)
+library(spdep)
+library(rgdal)
+library(rgeos)
+library(tmap)
+library(tmaptools)
+
 
 # data --------------------------------------------------------------------
 
@@ -30,9 +40,15 @@ counties_shp <-
     read_csv("data/state_fips.csv"),
     on = "STATEFP") %>%
   select(c(GEOID, State, geometry)) %>%
+  
+  # Filter to states in the dataset
+  
   filter(State %in% 
            unique(df_counties$State)) %>%
   mutate(GEOID = as.integer(GEOID)) %>%
+  
+  # Transform to WGS84
+  
   st_transform(crs = 4326)
 
 # user interface ----------------------------------------------------------
@@ -46,6 +62,23 @@ ui <-
     
     dashboardSidebar(
       
+      # Wait until action button is clicked to update
+      
+      actionButton(
+        inputId = "update",
+        label = "Update"),
+      
+      # Sets the alpha level
+      
+      sliderInput("alpha", "Interactive Map Transparency:",
+                  min = 0, max = 1,
+                  value = 0.75),
+      
+      # Sets the direction of the color palette
+      
+      checkboxInput("dir", "Flip Color Palette?",
+                    value = FALSE),
+      
       # Choose set of states
       
       selectInput(
@@ -54,8 +87,7 @@ ui <-
         choices = c(sort(
           unique(df_counties$State))),
         multiple = TRUE,
-        selected = c(sort(
-          unique(df_counties$State)))),
+        selected = sort(unique(df_counties$State))),
       
       # Select features which will be used to calculate the "Rust Score"
       
@@ -68,7 +100,6 @@ ui <-
                       "Income" = "income_change",
                       "Inequality Decrease" = "inequality_decrease",
                       "Poverty Decrease" = "poverty_decrease",
-                      "Homelessness Decrease" = "homelessness_decrease",
                       "Manufacturing Employment Change" =
                         "manufacturing_percent_change",
                       "Natural Resources Employment Change" =
@@ -83,18 +114,27 @@ ui <-
       
       
       
-      # Creates menu to navigate to the map, table, and histogram
+      # Creates menu to navigate to the home page, map, statistics, 
+      # table, and histogram
       
       sidebarMenu(
-        menuItem('Map',
+        menuItem('Home',
+                 icon = icon('home'),
+                 tabName = 'home'),
+        
+        menuItem('Interactive Map',
                  icon = icon('map'),
                  tabName = 'maps'),
         
-        menuItem('Table',
+        menuItem('Statistical Analysis',
+                 icon = icon('lightbulb'),
+                 tabName = 'stats'),
+        
+        menuItem('Summary Table',
                  icon = icon('table'),
                  tabName = 'tables'),
         
-        menuItem('Distribution',
+        menuItem('Distributions',
                  icon = icon('chart-bar'),
                  tabName = 'charts')
       )
@@ -114,25 +154,55 @@ ui <-
       
       tabItems(
         
+        # Home tab/landing page
+        
+        tabItem(
+          tabName = 'home',
+          h2('Welcome!'),
+          p("Select states and features, then explore the results in any
+          of the tabs. Click \"Update\" when you're ready to see 
+          your changes."),
+          p("All variables represent changes from 2010 to 2019, except 
+          manufacturing, natural resources, and foreign born population. 
+          The first two features range from 2000 to 2010, and foreign born
+          population ranges from 2000 to 2019."),
+          p("Note that the static maps use local spatial autocorrelation, 
+          which shows whether neighboring counties are similar. The first 
+          figure shows this statistic in blue. The second, green map shows 
+          counties where this value is significant, where we can be most 
+          certain it is correct. Finally, the last, red map shows the same 
+          information as the first map, but only for counties with 
+          significant results.")),
+        
         # Map tab
         
         tabItem(
           tabName = 'maps',
-          h2('Map'),
+          h2('Interactive Map'),
           leafletOutput(outputId = 'rust_map')),
         
-        # Summary statistics of the "Rust Score"
+        # Local Autocorrelation tab
+        
+        tabItem(
+          tabName = 'stats',
+          h2('Local Autocorrelation Analysis'),
+          fluidRow(cellWidths = c("33%", "33%", "33%"),
+                   plotOutput(outputId = 'lm_map_1'),
+                   plotOutput(outputId = 'lm_map_2'),
+                   plotOutput(outputId = 'lm_map_3'))),
+        
+        # Summary statistics tab
         
         tabItem(
           tabName = 'tables',
-          h2('Summary table'),
+          h2('Summary Table'),
           dataTableOutput(outputId = 'summary_table')),
         
-        # Histogram of "Rust Score"s for counties in selected region
+        # Density Plots (first 5 selected states)
         
         tabItem(
           tabName = 'charts',
-          h2('Rust Distribution'),
+          h2('Score Distributions'),
           plotOutput(outputId = 'plot_output')))
     )
 )
@@ -144,30 +214,93 @@ server <-
     
     # Data subsetting and summarizing -------------------------------------
     
-    # Filter shapefile by states:
+    # Filter shapefile by selected states:
     
     shp_filter <-
       reactive({
         counties_shp %>%
           filter(State %in% input$states) %>%
-          select(-c(State))})
+          select(-c(State))}) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
     
-    # Create the Rust Score using each selected variable:
+    # Create the Rust Score using selected variables:
     
     rust <-
       reactive({
         df_counties %>%
           
+          # Creates a new column combining selected variables into a single
+          # score using PCA
+          
+          mutate(`Recovery Score` =
+            prcomp(select(., input$variables),
+                   rank. = 1,
+                   center = TRUE,
+                   retx = TRUE)$x[,1]) %>%
+          
+          
           # Filter by states
           
-          filter(State %in% input$states) %>%
+          filter(State %in% input$states)
           
-          # Creates a new column summing each selected feature
+        }) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
+    
+    # Spatial autocorrelation calculations
+    
+    morans <-
+      reactive({
+        
+        moran_df <-
+          shp_filter() %>%
           
-          mutate(`Recovery Score` = rowMeans(
-            select(., input$variables),
-            na.rm = TRUE))
-        })
+          # Merge county information
+          
+          left_join(
+            rust(),
+            by = "GEOID")
+        
+        # Removes counties without neighbors (Two MA island counties)
+        # Will not work otherwise
+        
+        counties_shp <- moran_df[-c(1073, 1865),]
+        
+        # Determines which counties are neighbors
+        
+        neighbors <- poly2nb(counties_shp)
+        
+        # Calculates local spatial autocorrelation
+        
+        local <- localmoran(x = counties_shp$`Recovery Score`, 
+                            listw = nb2listw(neighbors, 
+                                             style = "W",
+                                             zero.policy = TRUE))
+        
+        # Binds results to original shapefile and returns
+        
+        cbind(counties_shp, local)
+      }) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
+    
+    # Create static basemap
+    
+    osm <-
+      reactive({
+        tmaptools::read_osm(bb(morans()), ext = 1.05)
+      }) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
     
     # Outputs -------------------------------------------------------------
     
@@ -187,19 +320,146 @@ server <-
           
           tm_shape(.) +
           tm_polygons(col = "Recovery Score",
-                      alpha = 0.75,
+                      alpha = input$alpha,
                       border.alpha = 0.05,
-                      palette = "BrBG",
-                      style = "cont",
+                      palette = 
+                        
+                        # Flips the color palette if the user desires
+                        
+                        if (input$dir == FALSE){"-BrBG"}
+                        else{"BrBG"},
+                      
+                      midpoint = NA,
+                      style = "hclust",
                       id = "County",
-                      popup.vars = c("County", "State",
+                      legend.format = list(digits = 2),
+                      popup.vars = c("County", 
+                                     "State",
                                      "Recovery Score"),
                       popup.format = list(digits = 2)) +
           
           # Fit the initial zoom to the states we selected
           
           tm_view(bbox =
-                    st_bbox(shp_filter())))
+                    st_bbox(shp_filter()))) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
+    
+    # Local Autocorrelation Statistics:
+    
+    # Raw Values
+    
+    output$lm_map_1 <-
+      renderPlot({
+        tm_shape(osm()) +
+
+          tm_rgb() +
+
+          # Add polygons filled with local moran values
+          # Note that the region around Nashville has an incredibly high value
+          # And as such quantiles were necessary
+
+          tm_shape(morans()) +
+          tm_polygons(col = "Ii",
+                      alpha = input$alpha,
+                      border.alpha = 0.1,
+                      style = "quantile",
+                      palette =
+                        # Flips the color palette if the user desires
+                        
+                        if (input$dir == FALSE){"Blues"}
+                        else{"-Blues"},
+                      
+                      title = "Local Moran Statistic") +
+
+          # Adjusts where the legend is located
+
+          tm_legend(legend.position = c("right", "bottom"))
+      }) %>%
+
+      # Waits until user updates to run
+
+      bindEvent(input$update)
+    
+    # Significance
+    
+    output$lm_map_2 <-
+      renderPlot({
+        tm_shape(osm()) +
+          
+          tm_rgb() +
+          
+          # Add polygons filled with local moran significance
+          
+          tm_shape(morans()) + 
+          tm_polygons(col = "Pr.z....E.Ii..",
+                      style = "fixed",
+                      alpha = input$alpha,
+                      border.alpha = 0.1,
+                      
+                      # Divides colors into significance levels
+                      
+                      breaks = c(0, 0.01, 0.05, 0.1, Inf),
+                      
+                      palette =
+                        # Flips the color palette if the user desires
+                        
+                        if (input$dir == FALSE){"-Greens"}
+                        else{"Greens"},
+                      
+                      title = "Local Moran Significance") +
+          
+          # Adjusts where the legend is located
+          
+          tm_legend(legend.position = c("right", "bottom"))
+      }) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
+    
+    # Values for significant (p < 0.1) regions
+    
+    output$lm_map_3 <-
+      renderPlot({
+        tm_shape(osm()) +
+          
+          tm_rgb() +
+          
+          # Plots moran values
+          # Positive values indicate similar surrounding values
+          
+          tm_shape(morans() %>%
+                     
+                     # Filters for only significant values
+                     
+                     filter(Pr.z....E.Ii.. < 0.1)) +
+          
+          # Add polygons filled with corresponding local moran stats
+          
+          tm_polygons(col = "Ii",
+                      alpha = input$alpha,
+                      border.alpha = 0.1,
+                      style = "quantile",
+                      
+                      palette =
+                        # Flips the color palette if the user desires
+                        
+                        if (input$dir == FALSE){"Reds"}
+                        else{"-Reds"},
+                      
+                      title = "Significant Local\nMoran Statistics") +
+          
+          # Adjusts where the legend is located
+          
+          tm_legend(legend.position = c("right", "bottom"))
+      }) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
     
     # Summary table of Rust Score:
     
@@ -210,21 +470,30 @@ server <-
           summarize(
             `Recovery Score IQR` = quantile(`Recovery Score`, probs = 0.75)-
               quantile(`Recovery Score`, probs = 0.25),
+            
             `Maximum Recovery Score` = max(`Recovery Score`),
+            
             `75th Percentile Recovery Score` = 
               quantile(`Recovery Score`, probs = 0.75),
+            
             `Average Recovery Score` = mean(`Recovery Score`),
+            
             `25th Percentile Recovery Score` = 
               quantile(`Recovery Score`, probs = 0.25),
+            
             `Minimum Recovery Score` = min(`Recovery Score`)) %>% 
           arrange(`Average Recovery Score`) %>%
           mutate(across(is.numeric, round, 3))
-      )
+      ) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
     
     # Histogram of county Recovery Scores:
     
     output$plot_output <-
-      renderPlot(
+      renderPlot({
         rust() %>%
           filter(State %in% input$states[1:5]) %>%
           arrange(State) %>%
@@ -238,7 +507,11 @@ server <-
           
           labs(y = "Count",
                color = "State") + 
-          theme_minimal())
+          theme_minimal()}) %>%
+      
+      # Waits until user updates to run
+      
+      bindEvent(input$update)
   }
 
 # knit and run app --------------------------------------------------------

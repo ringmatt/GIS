@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<!-- saved from url=(0033)https://rpubs.com/henglong/537953 -->
+<html data-darkreader-mode="dynamic" data-darkreader-scheme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--text" media="screen"></style><style class="darkreader darkreader--invert" media="screen">.jfk-bubble.gtx-bubble, .captcheck_answer_label > input + img, span#closed_text > img[src^="https://www.gstatic.com/images/branding/googlelogo"], span[data-href^="https://www.hcaptcha.com/"] > #icon, #bit-notification-bar-iframe, ::-webkit-calendar-picker-indicator {
+    filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+}</style><style class="darkreader darkreader--inline" media="screen">[data-darkreader-inline-bgcolor] {
+  background-color: var(--darkreader-inline-bgcolor) !important;
+}
+[data-darkreader-inline-bgimage] {
+  background-image: var(--darkreader-inline-bgimage) !important;
+}
+[data-darkreader-inline-border] {
+  border-color: var(--darkreader-inline-border) !important;
+}
+[data-darkreader-inline-border-bottom] {
+  border-bottom-color: var(--darkreader-inline-border-bottom) !important;
+}
+[data-darkreader-inline-border-left] {
+  border-left-color: var(--darkreader-inline-border-left) !important;
+}
+[data-darkreader-inline-border-right] {
+  border-right-color: var(--darkreader-inline-border-right) !important;
+}
+[data-darkreader-inline-border-top] {
+  border-top-color: var(--darkreader-inline-border-top) !important;
+}
+[data-darkreader-inline-boxshadow] {
+  box-shadow: var(--darkreader-inline-boxshadow) !important;
+}
+[data-darkreader-inline-color] {
+  color: var(--darkreader-inline-color) !important;
+}
+[data-darkreader-inline-fill] {
+  fill: var(--darkreader-inline-fill) !important;
+}
+[data-darkreader-inline-stroke] {
+  stroke: var(--darkreader-inline-stroke) !important;
+}
+[data-darkreader-inline-outline] {
+  outline-color: var(--darkreader-inline-outline) !important;
+}
+[data-darkreader-inline-stopcolor] {
+  stop-color: var(--darkreader-inline-stopcolor) !important;
+}</style><style class="darkreader darkreader--variables" media="screen">:root {
+   --darkreader-neutral-background: #131516;
+   --darkreader-neutral-text: #d8d4cf;
+   --darkreader-selection-background: #004daa;
+   --darkreader-selection-text: #e8e6e3;
+}</style><style class="darkreader darkreader--root-vars" media="screen"></style><style class="darkreader darkreader--user-agent" media="screen">html {
+    background-color: #181a1b !important;
+}
+html, body, input, textarea, select, button {
+    background-color: #181a1b;
+}
+html, body, input, textarea, select, button {
+    border-color: #736b5e;
+    color: #e8e6e3;
+}
+a {
+    color: #3391ff;
+}
+table {
+    border-color: #545b5e;
+}
+::placeholder {
+    color: #b2aba1;
+}
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    background-color: #555b00 !important;
+    color: #e8e6e3 !important;
+}
+::-webkit-scrollbar {
+    background-color: #202324;
+    color: #aba499;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #454a4d;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #575e62;
+}
+::-webkit-scrollbar-thumb:active {
+    background-color: #484e51;
+}
+::-webkit-scrollbar-corner {
+    background-color: #181a1b;
+}
+::selection {
+    background-color: #004daa !important;
+    color: #e8e6e3 !important;
+}
+::-moz-selection {
+    background-color: #004daa !important;
+    color: #e8e6e3 !important;
+}</style>
+<meta content="IE=edge" http-equiv="X-UA-Compatible">
+<meta content="width=800" name="viewport">
+<title>RPubs - Cluster Analaysis &amp;amp; Decision Tree Induction</title>
+<meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="5b+GpjFCtfgFCKXmXfhJlR22D7zFKK4S/cvTvM7W01bGCPtJyO8DlRoFU5upI7bdLYjuj3WgiQsxzE3P80p4BA==">
+<link rel="stylesheet" media="all" href="./hierarchical_clustering_files/application-db3d8f9490de0f0058decd5613b51469ee8c3214db95ce7e0bd47355e96429eb.css"><style class="darkreader darkreader--sync" media="screen"></style>
+<link rel="stylesheet" media="all" href="./hierarchical_clustering_files/show-58702f9d9025877672e50953d29b220ea08ef2b5acac46cef96fb9182e555801.css"><style class="darkreader darkreader--sync" media="screen"></style>
+<script async="" src="./hierarchical_clustering_files/analytics.js.download"></script><script src="./hierarchical_clustering_files/application-050918065a747f23455921e989643a0f9050e5da8573c9858fc4266f0ec88af2.js.download"></script><meta name="darkreader" content="795f4f7ca6904900acf504a813c34cbb"><style class="darkreader darkreader--override" media="screen">.vimvixen-hint {
+    background-color: #7b5300 !important;
+    border-color: #d8b013 !important;
+    color: #f3e8c8 !important;
+}
+::placeholder {
+    opacity: 0.5 !important;
+}
+a[href="https://coinmarketcap.com/"] > svg[width="94"][height="16"] > path {
+    fill: var(--darkreader-neutral-text) !important;
+}
+#edge-translate-panel-body,
+.MuiTypography-body1 {
+    color: var(--darkreader-neutral-text) !important;
+}
+gr-main-header {
+    background-color: #0f3a48 !important;
+}
+embed[type="application/pdf"] { filter: invert(100%) contrast(90%); }</style>
+<link rel="stylesheet" href="./hierarchical_clustering_files/tzi3tjz.css"><style class="darkreader darkreader--cors" media="screen">.tk-adelle { font-family: "adelle",serif; }</style><style class="darkreader darkreader--sync" media="screen"></style>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-20375833-3', 'auto', {'allowLinker': true});
+  ga('require', 'linker');
+  ga('linker:autoLink', ['rstudio.com', 'rstudio.github.io', 'rviews.rstudio.com', 'community.rstudio.com', 'rpubs.rstudio.com', 'environments.rstudio.com', 'rstudio.org', 'dailies.rstudio.com', 'pages.rstudio.com', 'db.rstudio.com', 'solutions.rstudio.com', 'docs.rstudio.com', 'spark.rstudio.com', 'shiny.rstudio.com', 'education.rstudio.com', 'rstudio.cloud', 'shinyapps.io', 'teamadmin.rstudio.com', 'blog.rstudio.com', 'support.rstudio.com'] );
+  ga('send', 'pageview');
+</script>
+
+<script type="text/javascript" async="" src="./hierarchical_clustering_files/embed.js.download"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/embed/styles/lounge.7ab903feba7624935283ca4c7d8c7203.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/common.bundle.2f2f40d40785c9541a90e9086c8770a3.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/lounge.bundle.920cdf639b386b42eddc25a8b2755561.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"><script async="" id="dsq_recs_scr" src="./hierarchical_clustering_files/recommendations.js.download"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/recommendations/styles/recommendations.10022a97346f1c6e3798931bbd8e4bb5.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/recommendations/common.bundle.6c6defcc206edabe5048d82459ee0a0e.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/recommendations/recommendations.bundle.926bc472e4859a48daa346b4ba2ab4f4.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"></head>
+<body class="show-pub show-toolbars" data-new-gr-c-s-check-loaded="14.1041.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1041.0">
+<div class="modal" id="login" style="display: none">
+<div class="modal-header">
+<h1>Sign In</h1>
+</div>
+<div class="modal-body">
+<div class="alert" id="login_message" style="display: none"></div>
+<form action="https://rpubs.com/auth/login" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="✓"><input type="hidden" name="authenticity_token" value="5b+GpjFCtfgFCKXmXfhJlR22D7zFKK4S/cvTvM7W01bGCPtJyO8DlRoFU5upI7bdLYjuj3WgiQsxzE3P80p4BA==">
+<input name="return_url" type="hidden">
+<div class="fieldset">
+<div class="control-group">
+<label class="control-label" for="login_username">Username or Email</label>
+<div class="controls">
+<input class="input-xlarge" id="login_username" name="username" type="text">
+</div>
+</div>
+<div class="control-group">
+<label class="control-label" for="login_password">Password</label>
+<div class="controls">
+<input class="input-xlarge" id="login_password" name="password" type="password">
+</div>
+</div>
+<div class="control-group">
+<a href="https://rpubs.com/auth/passwordhelp" target="_blank">Forgot your password?</a>
+</div>
+</div>
+</form>
+
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-primary" id="login-modal-submit">Sign In</button>
+<button class="btn" id="login-modal-cancel">Cancel</button>
+</div>
+</div>
+<div class="navbar-inner" id="pageheader">
+<div id="branding">
+<h1 id="logo">
+<a href="https://rpubs.com/"><span id="R">R</span>Pubs
+</a>
+</h1>
+<span id="tagline">by RStudio</span>
+</div>
+<div id="identity">
+<div class="btn-group">
+<a class="btn btn-inverse btn-small pull-right" href="https://rpubs.com/henglong/537953#" onclick="rpubs_showLogin(); return false">
+Sign in
+</a>
+<a class="btn btn-inverse btn-small pull-right" href="https://rpubs.com/users/new">
+Register
+</a>
+</div>
+</div>
+</div>
+<div id="pagebody">
+<div id="payload">
+<iframe src="./hierarchical_clustering_files/537953_14bec1fc84ec42c28afef70974595c86.html"></iframe>
+<button class="btn btn-tiny" id="btn-show-toolbars">
+<i class="icon-resize-small"></i>
+</button>
+</div>
+<div class="navbar navbar-fixed-bottom" id="pagefooter">
+<div class="navbar-inner">
+<div class="container-fluid">
+<ul class="nav" id="pubmeta">
+<li id="pubtitle">
+<label>Cluster Analaysis &amp; Decision Tree Induction</label>
+</li>
+<li id="pubauthor">
+<a href="https://rpubs.com/henglong">by henglong</a>
+</li>
+<li id="pubtime">
+<label>
+Last updated
+<time datetime="2019-10-10T22:38:51+00:00">about 2 years ago</time>
+</label>
+</li>
+</ul>
+<ul class="nav pull-right">
+<li>
+<button class="btn btn-small btn-success" id="btn-comments">
+<i class="icon-comment icon-white"></i>
+<span id="comment-verb-hide">
+Hide
+</span>
+Comments
+<span id="comment-count">
+(–)
+</span>
+</button>
+<button class="btn btn-small btn-info" id="btn-share">
+<i class="icon-share icon-white"></i>
+Share
+</button>
+<button class="btn btn-small btn-inverse" id="btn-hide-toolbars">
+Hide Toolbars
+</button>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="modal hide" id="modal-share">
+<div class="modal-body">
+<btn class="close" data-dismiss="modal" type="button">×</btn>
+<h2 class="first">Post on:</h2>
+<p>
+<a class="btn btn-primary btn-large" href="https://twitter.com/intent/tweet?original_referer=http%3A%2F%2Frpubs.com%2Fhenglong%2F537953&amp;source=tweetbutton&amp;text=Cluster%20Analaysis%20%26%20Decision%20Tree%20Induction&amp;url=http%3A%2F%2Frpubs.com%2Fhenglong%2F537953" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=275,width=660&#39;);return false;">
+Twitter
+</a>
+<a class="btn btn-primary btn-large" href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Frpubs.com%2Fhenglong%2F537953&amp;t=Cluster%20Analaysis%20%26%20Decision%20Tree%20Induction" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=350,width=660&#39;);return false;">
+Facebook
+</a>
+<a class="btn btn-primary btn-large" href="https://plus.google.com/share?url=http%3A%2F%2Frpubs.com%2Fhenglong%2F537953" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600&#39;);return false;">
+Google+
+</a>
+</p>
+<hr>
+<h3>Or copy &amp; paste this link into an email or IM:</h3>
+<input onclick="this.select()" readonly="readonly" value="http://rpubs.com/henglong/537953">
+</div>
+</div>
+<script>
+  $('#btn-edit').click(function() {
+    location.href = "/henglong/537953/edit";
+  });
+  $('#btn-delete').mouseover(function() {
+    $('#btn-delete').removeClass('btn-inverse').addClass('btn-danger');
+  });
+  $('#btn-delete').mouseout(function() {
+    $('#btn-delete').addClass('btn-inverse').removeClass('btn-danger');
+  });
+  $('#btn-hide-toolbars').click(function() {
+    $(document.body).addClass('hide-toolbars');
+    $(document.body).removeClass('show-toolbars');
+  });
+  $('#btn-show-toolbars').click(function() {
+    $(document.body).addClass('show-toolbars');
+    $(document.body).removeClass('hide-toolbars');
+  });
+  $('#btn-share').click(function() {
+    $('#modal-share').modal().css({
+      'margin-left': function () {
+        return -($(this).width() / 2);
+      }
+    });
+  });
+  $('#btn-comments').click(function() {
+    $(document.body).toggleClass('show-comments');
+  });
+  setInterval(function() {
+    // Poll for comment count. Barf.
+    var text = $('#dsq-num-posts').text();
+    if (text && /^\d+$/.test(text))
+      $('#comment-count').text('(' + text + ')');
+  }, 1000);
+</script>
+<div id="comment-wrapper">
+<div id="disqus_recommendations" style="margin-bottom: 12px;"><iframe id="dsq-app2067" name="dsq-app2067" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./hierarchical_clustering_files/saved_resource.html" style="width: 100% !important; border: none !important; overflow: hidden !important; height: 0px !important; display: inline !important; box-sizing: border-box !important; --darkreader-inline-border-top: initial; --darkreader-inline-border-right: initial; --darkreader-inline-border-bottom: initial; --darkreader-inline-border-left: initial;" data-darkreader-inline-border-top="" data-darkreader-inline-border-right="" data-darkreader-inline-border-bottom="" data-darkreader-inline-border-left="" horizontalscrolling="no" verticalscrolling="no"></iframe></div><div id="disqus_thread"><iframe id="dsq-app6656" name="dsq-app6656" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./hierarchical_clustering_files/saved_resource(1).html" style="width: 1px !important; min-width: 100% !important; border: none !important; overflow: hidden !important; height: 1358px !important; --darkreader-inline-border-top: initial; --darkreader-inline-border-right: initial; --darkreader-inline-border-bottom: initial; --darkreader-inline-border-left: initial;" data-darkreader-inline-border-top="" data-darkreader-inline-border-right="" data-darkreader-inline-border-bottom="" data-darkreader-inline-border-left="" horizontalscrolling="no" verticalscrolling="no"></iframe></div>
+</div>
+
+</div>
+
+
+<iframe style="display: none;" src="./hierarchical_clustering_files/saved_resource(2).html"></iframe><iframe style="display: none;" src="./hierarchical_clustering_files/saved_resource(3).html"></iframe></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

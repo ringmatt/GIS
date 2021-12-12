@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<!-- saved from url=(0127)https://pippio.com/api/sync?pid=1391&ref=https%3A%2F%2Frpubs.com%2Fquarcs-lab%2Fspatial-autocorrelation&it=1&iv=c5a3ssp53t52jv4 -->
+<html data-darkreader-mode="dynamic" data-darkreader-scheme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--text" media="screen"></style><style class="darkreader darkreader--invert" media="screen">.jfk-bubble.gtx-bubble, .captcheck_answer_label > input + img, span#closed_text > img[src^="https://www.gstatic.com/images/branding/googlelogo"], span[data-href^="https://www.hcaptcha.com/"] > #icon, #bit-notification-bar-iframe, ::-webkit-calendar-picker-indicator {
+    filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+}</style><style class="darkreader darkreader--inline" media="screen">[data-darkreader-inline-bgcolor] {
+  background-color: var(--darkreader-inline-bgcolor) !important;
+}
+[data-darkreader-inline-bgimage] {
+  background-image: var(--darkreader-inline-bgimage) !important;
+}
+[data-darkreader-inline-border] {
+  border-color: var(--darkreader-inline-border) !important;
+}
+[data-darkreader-inline-border-bottom] {
+  border-bottom-color: var(--darkreader-inline-border-bottom) !important;
+}
+[data-darkreader-inline-border-left] {
+  border-left-color: var(--darkreader-inline-border-left) !important;
+}
+[data-darkreader-inline-border-right] {
+  border-right-color: var(--darkreader-inline-border-right) !important;
+}
+[data-darkreader-inline-border-top] {
+  border-top-color: var(--darkreader-inline-border-top) !important;
+}
+[data-darkreader-inline-boxshadow] {
+  box-shadow: var(--darkreader-inline-boxshadow) !important;
+}
+[data-darkreader-inline-color] {
+  color: var(--darkreader-inline-color) !important;
+}
+[data-darkreader-inline-fill] {
+  fill: var(--darkreader-inline-fill) !important;
+}
+[data-darkreader-inline-stroke] {
+  stroke: var(--darkreader-inline-stroke) !important;
+}
+[data-darkreader-inline-outline] {
+  outline-color: var(--darkreader-inline-outline) !important;
+}
+[data-darkreader-inline-stopcolor] {
+  stop-color: var(--darkreader-inline-stopcolor) !important;
+}</style><style class="darkreader darkreader--variables" media="screen">:root {
+   --darkreader-neutral-background: #131516;
+   --darkreader-neutral-text: #d8d4cf;
+   --darkreader-selection-background: #004daa;
+   --darkreader-selection-text: #e8e6e3;
+}</style><style class="darkreader darkreader--root-vars" media="screen"></style><style class="darkreader darkreader--user-agent" media="screen">input, textarea, select, button {
+    background-color: #181a1b;
+}
+html, body, input, textarea, select, button {
+    border-color: #736b5e;
+    color: #e8e6e3;
+}
+a {
+    color: #3391ff;
+}
+table {
+    border-color: #545b5e;
+}
+::placeholder {
+    color: #b2aba1;
+}
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    background-color: #555b00 !important;
+    color: #e8e6e3 !important;
+}
+::-webkit-scrollbar {
+    background-color: #202324;
+    color: #aba499;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #454a4d;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #575e62;
+}
+::-webkit-scrollbar-thumb:active {
+    background-color: #484e51;
+}
+::-webkit-scrollbar-corner {
+    background-color: #181a1b;
+}
+::selection {
+    background-color: #004daa !important;
+    color: #e8e6e3 !important;
+}
+::-moz-selection {
+    background-color: #004daa !important;
+    color: #e8e6e3 !important;
+}</style><meta name="referrer" content="no-referrer"><script>
+		var f = function () {
+	function loadChains(chains, limit, onChainDone) {
+    function newImageLoader(url) {
+        return function () {
+            var e = new Image();
+            addListeners(e);
+            e.src = url;
+        };
+    }
+
+    function newScriptLoader(url) {
+        return function () {
+            var e = document.createElement('script');
+            e.type = 'text/javascript';
+            e.async = true;
+            addListeners(e);
+            e.src = url;
+            document.head.appendChild(e);
+        };
+    }
+
+    function newIframeLoader(url) {
+        return function () {
+            var e = document.createElement('iframe');
+            e.style.display = 'none';
+            e.width = 1;
+            e.height = 1;
+            addListeners(e);
+            e.src = url;
+            document.body.appendChild(e);
+        };
+    }
+
+    function addListeners(e) {
+        addLoadErrorListeners(e, loadNext);
+        if (typeof onChainDone === 'function') {
+            addLoadErrorListeners(e, onChainDone);
+        }
+    }
+
+    function addLoadErrorListeners(e, listener) {
+        if (typeof e.addEventListener === 'function') {
+            e.addEventListener('load', listener, false);
+            e.addEventListener('error', listener, false);
+        } else if (typeof e.attachEvent === 'function') {
+            e.attachEvent('onload', listener);
+            e.attachEvent('onerror', listener);
+        }
+    }
+
+    function loadNext() {
+        var next = loaders.shift();
+        if (typeof next === "function") {
+            setTimeout(next);
+        }
+    }
+
+    var loaders = chains.reduce(function (acc, value) {
+        var mode = value[0];
+        var url = value[1];
+
+        switch (mode) {
+            case 'image':
+                acc.push(newImageLoader(url));
+                break;
+            case 'script':
+                acc.push(newScriptLoader(url));
+                break;
+            case 'iframe':
+                acc.push(newIframeLoader(url));
+                break;
+        }
+        return acc;
+    }, []);
+
+    for (var i = 0; i < limit; i++) {
+        loadNext();
+    }
+}
+
+	var chains = [];
+	chains.push(['image', 'https://ei.rlcdn.com/448046.gif?n\u003D1\u0026partner_site_id\u003D1017\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://aa.agkn.com/adscores/s.pixel?sid\u003D9102279158\u0026lsid\u003D16342\u0026em\u003D7c7a885d1b098215711f0bdbbcb1bbb9']);
+	chains.push(['image', 'https://login.dotomi.com/ucm/UCMController?dtm_com\u003D29\u0026dtm_fid\u003D103\u0026dtm_cid\u003D3167\u0026dtm_cmagic\u003D20c86a\u0026dtm_format\u003D6\u0026cli_promo_id\u003D110\u0026dtmc_pub_id\u003D16342\u0026dtm_email_hash\u003DD719106399D94D0AD9901A4A0B319B26']);
+	chains.push(['image', 'https://tag.apxlv.com/tag/partner/167?pixel_mode\u003Dpixel\u0026md5\u003DD719106399D94D0AD9901A4A0B319B26\u0026pid\u003D16342\u0026md5\u003D7c7a885d1b098215711f0bdbbcb1bbb9\u0026pid\u003D16342\u0026s\u003D3650cc2e44d175446df3b352f38479d135c4c8239f8f5b605a6b561c71793f4a\u0026pid\u003D16342\u0026s\u003D002cf6ad209dc0d0b071feef02275873278d94f4c4afc270c79fa43dc0246b05\u0026pid\u003D11616\u0026s\u003D4cac85711031c80531abbcb4f20c5ca3e80ac46039844019437d848d5840db4b\u0026pid\u003D15913']);
+	chains.push(['image', 'https://e.dlx.addthis.com/e/a-1137/s-7715?ret\u003Dimg\u0026na_em\u003DF0096168D195C5021B4BBD7C63DFCC50071F3501\u0026na_ci\u003DIBiGiU4ePJEcraX1jZ_FX63kWQ\u0026na_sp\u003D16342']);
+	chains.push(['image', 'https://p.alocdn.com/c/2973/m/D719106399D94D0AD9901A4A0B319B26/i/16342/s/F0096168D195C5021B4BBD7C63DFCC50071F3501/is/16342/t/3650cc2e44d175446df3b352f38479d135c4c8239f8f5b605a6b561c71793f4a/it/16342/p.gif']);
+	chains.push(['image', 'https://tag.yieldoptimizer.com/ps/ps?t\u003Di\u0026p\u003D4514\u0026sha256\u003D3650cc2e44d175446df3b352f38479d135c4c8239f8f5b605a6b561c71793f4a\u0026sha1\u003DF0096168D195C5021B4BBD7C63DFCC50071F3501\u0026md5\u003DD719106399D94D0AD9901A4A0B319B26']);
+	chains.push(['image', 'https://tr.snapchat.com/cs/r?u_hem\u003D3650cc2e44d175446df3b352f38479d135c4c8239f8f5b605a6b561c71793f4a\u0026u_hems\u003D%5B%7B%22u_hem%22%3A%223650cc2e44d175446df3b352f38479d135c4c8239f8f5b605a6b561c71793f4a%22%2C%22pub_id%22%3A%2216342%22%7D%2C%7B%22u_hem%22%3A%22002cf6ad209dc0d0b071feef02275873278d94f4c4afc270c79fa43dc0246b05%22%2C%22pub_id%22%3A%2218%22%7D%2C%7B%22u_hem%22%3A%224cac85711031c80531abbcb4f20c5ca3e80ac46039844019437d848d5840db4b%22%2C%22pub_id%22%3A%2215913%22%7D%5D']);
+	chains.push(['image', 'https://idx.listrakbi.com/1/xv3sl1/pixel.gif?v\u003D1\u0026md5\u003DD719106399D94D0AD9901A4A0B319B26\u0026md5\u003D7c7a885d1b098215711f0bdbbcb1bbb9\u0026sha1\u003DF0096168D195C5021B4BBD7C63DFCC50071F3501\u0026sha256\u003D002cf6ad209dc0d0b071feef02275873278d94f4c4afc270c79fa43dc0246b05\u0026sha256\u003D4cac85711031c80531abbcb4f20c5ca3e80ac46039844019437d848d5840db4b\u0026sha256\u003D3650cc2e44d175446df3b352f38479d135c4c8239f8f5b605a6b561c71793f4a']);
+	chains.push(['image', 'https://tag.apxlv.com/tag/partner/222?pixel_mode\u003Dpixel']);
+	chains.push(['image', 'https://p.adsymptotic.com/d/px?_pid\u003D13553\u0026_psign\u003D9e62e5c043ecadc9479a0ccac401dd7d']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D1\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D2\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D3\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D4\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D5\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D6\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D7\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D8\u0026cparams\u003Dplacement%3D1391']);
+	chains.push(['image', 'https://rc.rlcdn.com/456809.gif?n\u003D9\u0026cparams\u003Dplacement%3D1391']);
+
+	loadChains(chains, 10, (typeof onDone === "function") ? onDone : null);
+		};
+
+		if (document.body) { f(); } else { document.addEventListener('DOMContentLoaded', f); }
+	</script>
+<meta name="darkreader" content="dbe57badaf254f3193633aa6ed73b406"><style class="darkreader darkreader--override" media="screen">.vimvixen-hint {
+    background-color: #7b5300 !important;
+    border-color: #d8b013 !important;
+    color: #f3e8c8 !important;
+}
+::placeholder {
+    opacity: 0.5 !important;
+}
+a[href="https://coinmarketcap.com/"] > svg[width="94"][height="16"] > path {
+    fill: var(--darkreader-neutral-text) !important;
+}
+#edge-translate-panel-body,
+.MuiTypography-body1 {
+    color: var(--darkreader-neutral-text) !important;
+}
+gr-main-header {
+    background-color: #0f3a48 !important;
+}
+embed[type="application/pdf"] { filter: invert(100%) contrast(90%); }</style></head><body data-new-gr-c-s-check-loaded="14.1041.0" data-gr-ext-installed=""></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

@@ -1,6 +1,41 @@
-4. Edit Visualizations
-	* Interactive Leaflet w/ Filters
-7. Edit App
-	* Add a button for execution
-	* Add landing page that describes purpose of app
+General for Project:
+1. R Markdown describing analysis
+	* Data Prep
+		* Normalize
+		* Difference
+		* Standardize
+	* Scores
+		* PCA
+	* Autocorrelation
+		* Local Moran Statistic
+		* Significance < 0.1
+2. Written Summary
+	* APA format
+	* 2-3 Pages
+	* Structure
+		* Introduction
+			* Purposes
+			* Application
+			* Why "Recovery", and not "Rust"?
+		* Data
+			* Reuse Data Viz structure
+		* Methods
+			* Normalizing
+			* Change over time
+			* PCA
+		* Conclusion
+			* Findings
+				* "belts" inconclusive
+				* Urban areas in Upper Midwest belt struggling
+			* Caveats
+			* Applications
+		
+Extra:
+1. Edit App
 	* CSS
+2. Time
+	* Temporal autocorrelation
+3. Urban-Rural
+	* Remove non-core counties OR...
+	* ...Include urban-rural classification in the rust score
+		- Seems to suggest looking only at certain metro areas

@@ -1,0 +1,22 @@
+
+                        try
+                        {
+                            var linksArray = '  https://live.primis.tech/content/video/hls/hls.0.12.4_2.min.js  https://live.primis.tech/content/prebid/prebidVid.5.18.0_6.min.js   https://live.primis.tech/live/liveVideo.php?vpaidManager=sekindo&s=58057&ri=6C69766553746174737C736B317B54307D7B64323032312D31322D31315F30357D7B7331323239363638377D7B4333307D7B53623364734C6E4231636D52315A53356C5A48553D7D7B626368726F6D657D7B716465736B746F707D7B6F77696E646F77737D7B583430317D7B593239327D7B66317D7B7251554A55494338675957523458325231636D463061573975494338674D5341764947526C5A6D46316248513D7D7B4C363434397DFEFE&userIpAddr=68.60.126.111&userUA=Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F96.0.4664.93+Safari%2F537.36&debugInformation=ABT+%2F+adx_duration+%2F+1+%2F+default&isWePassGdpr=1&noViewableMidrollPolicy=vary&isDoublePreroll=1&autoSkipVideoSec=20&c2pWaitTime=7&isSinglePageFloatSupport=0&csuuid=60e73e2570179&debugInfo=12296687_ABT+%2F+adx_duration+%2F+1+%2F+default&debugPlayerSession=&pubUrlDEMO=&isAsyncDEMO=0&customPlaylistIdDEMO=&sta=12296687&showLogo=0&clkUrl=&plMult=-1&schedule=eyJwcmVfcm9sbCI6MSwibWlkX3JvbGwiOltdLCJnYXAiOiJhdXRvIn0%3D&content=plembed1699srkxwmqo&secondaryContent=&x=401&y=292&pubUrl=https%3A%2F%2Fowl.purdue.edu%2Fowl%2Fresearch_and_citation%2Fapa_style%2Fapa_formatting_and_style_guide%2Fgeneral_format.html&contentNum=1&flow_closeBtn=1&flowCloseTimeout=0&flow_closeButtonPosition=left&flow_direction=bl&flow_horizontalOffset=10&flow_bottomOffset=10&impGap=2&flow_width=401&flow_height=226&videoType=flow&gdpr=0&gdprConsent=&contentFeedId=&geoLati=41.9604&geoLong=-85.6407&vpTemplate=6449&flowMode=both&isRealPreroll=0&playerApiId=&isApp=0&ccpa=0&ccpaConsent=&subId=owl.purdue.edu'.split(' ');
+
+                            for(var l = 0; l < linksArray.length; l++)
+                            {
+                                if(linksArray[l].length > 10)
+                                {
+                                    var sc = document.createElement('script');
+                                    sc.type = 'text/javascript';
+                                    sc.async = false;
+                                    sc.src = linksArray[l];
+                                    document.head.appendChild(sc);
+                                }
+                            }
+                        }
+                        catch(e)
+                        {
+                            document.write('<script type="text/javascript" src="https://live.primis.tech/content/video/hls/hls.0.12.4_2.min.js">\x3C/script><script type="text/javascript" src="https://live.primis.tech/content/prebid/prebidVid.5.18.0_6.min.js">\x3C/script><script type=' + "'" + 'text/javascript' + "'" + ' language=' + "'" + 'javascript' + "'" + ' src="https://live.primis.tech/live/liveVideo.php?vpaidManager=sekindo&s=58057&ri=6C69766553746174737C736B317B54307D7B64323032312D31322D31315F30357D7B7331323239363638377D7B4333307D7B53623364734C6E4231636D52315A53356C5A48553D7D7B626368726F6D657D7B716465736B746F707D7B6F77696E646F77737D7B583430317D7B593239327D7B66317D7B7251554A55494338675957523458325231636D463061573975494338674D5341764947526C5A6D46316248513D7D7B4C363434397DFEFE&userIpAddr=68.60.126.111&userUA=Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F96.0.4664.93+Safari%2F537.36&debugInformation=ABT+%2F+adx_duration+%2F+1+%2F+default&isWePassGdpr=1&noViewableMidrollPolicy=vary&isDoublePreroll=1&autoSkipVideoSec=20&c2pWaitTime=7&isSinglePageFloatSupport=0&csuuid=60e73e2570179&debugInfo=12296687_ABT+%2F+adx_duration+%2F+1+%2F+default&debugPlayerSession=&pubUrlDEMO=&isAsyncDEMO=0&customPlaylistIdDEMO=&sta=12296687&showLogo=0&clkUrl=&plMult=-1&schedule=eyJwcmVfcm9sbCI6MSwibWlkX3JvbGwiOltdLCJnYXAiOiJhdXRvIn0%3D&content=plembed1699srkxwmqo&secondaryContent=&x=401&y=292&pubUrl=https%3A%2F%2Fowl.purdue.edu%2Fowl%2Fresearch_and_citation%2Fapa_style%2Fapa_formatting_and_style_guide%2Fgeneral_format.html&contentNum=1&flow_closeBtn=1&flowCloseTimeout=0&flow_closeButtonPosition=left&flow_direction=bl&flow_horizontalOffset=10&flow_bottomOffset=10&impGap=2&flow_width=401&flow_height=226&videoType=flow&gdpr=0&gdprConsent=&contentFeedId=&geoLati=41.9604&geoLong=-85.6407&vpTemplate=6449&flowMode=both&isRealPreroll=0&playerApiId=&isApp=0&ccpa=0&ccpaConsent=&subId=owl.purdue.edu">\x3C/script>');
+                        }
+                        
