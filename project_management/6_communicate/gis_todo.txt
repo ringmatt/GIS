@@ -1,14 +1,4 @@
 General for Project:
-1. R Markdown describing analysis
-	* Data Prep
-		* Normalize
-		* Difference
-		* Standardize
-	* Scores
-		* PCA
-	* Autocorrelation
-		* Local Moran Statistic
-		* Significance < 0.1
 2. Written Summary
 	* APA format
 	* 2-3 Pages
